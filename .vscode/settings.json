@@ -1,0 +1,14 @@
+{
+    "conventionalCommits.scopes": [
+        "Tests",
+        "Documentation",
+        "Docker",
+        "Traslate",
+        "Workflow"
+    ],
+    "python.testing.pytestArgs": [
+        "apps"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
