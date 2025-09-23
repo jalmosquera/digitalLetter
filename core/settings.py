@@ -35,11 +35,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'parler',
     'parler_rest',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -183,3 +185,8 @@ PARLER_LANGUAGES = {
         'hide_untranslated': False,
     }
 }
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
