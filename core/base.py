@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.products',
     'apps.categories',
+    'apps.ingredients',
     'apps.company',
     # librerías externas
     'rest_framework',

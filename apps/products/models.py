@@ -1,6 +1,7 @@
 from django.db import models
 from parler.models import TranslatableModel,TranslatedFields
 from apps.categories.models import Category
+from apps.ingredients.models import Ingredients
 
 class Plates(TranslatableModel):
     '''Model definition for Plates.'''
@@ -13,6 +14,7 @@ class Plates(TranslatableModel):
     available = models.BooleanField(default=True)
     image = models.ImageField(upload_to='plates/', blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='plates', blank=True)
+    ingredients = models.ManyToManyField(Ingredients, related_name='plates', blank=True)  # ✅ ingredientes
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
 

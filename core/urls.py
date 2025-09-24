@@ -21,6 +21,9 @@ urlpatterns = [
     # Categories API
     path('api/', include('apps.categories.api.router')),  # Categories API
 
+    # Ingredients API
+    path('api/', include('apps.ingredients.api.router')),  # Ingredients API
+
     # Products API
     path('api/', include('apps.products.api.router')),  # Products API
 

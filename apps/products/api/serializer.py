@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
 from apps.products.models import Plates
-from apps.categories.api.serializers import CategorySerializerGet, CategorySerializerPost
+from apps.categories.api.serializers import CategorySerializerGet
 from apps.categories.models import Category
+from apps.ingredients.api.serializers import IngredientSerializer
+from apps.ingredients.models import Ingredients
 
 
 class ProductSerializerPost(TranslatableModelSerializer):
@@ -10,6 +12,11 @@ class ProductSerializerPost(TranslatableModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Category.objects.all()
+    )
+    ingredients = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Ingredients.objects.all(),
+        required=False
     )
 
     class Meta:
@@ -20,8 +27,10 @@ class ProductSerializerPost(TranslatableModelSerializer):
     def create(self, validated_data):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', [])
+        ingredients = validated_data.pop('ingredients', [])
         instance = Plates.objects.create(**validated_data)
         instance.categories.set(categories)
+        instance.ingredients.set(ingredients)  # ✅ añadimos ingredientes
         for lang_code, translation_fields in translations.items():
             instance.set_current_language(lang_code)
             for attr, value in translation_fields.items():
@@ -32,8 +41,11 @@ class ProductSerializerPost(TranslatableModelSerializer):
     def update(self, instance, validated_data):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', None)
+        ingredients = validated_data.pop('ingredients', None)
         if categories is not None:
             instance.categories.set(categories)
+        if ingredients is not None:
+            instance.ingredients.set(ingredients)  # ✅ actualizamos ingredientes
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         for lang_code, translation_fields in translations.items():
@@ -46,7 +58,8 @@ class ProductSerializerPost(TranslatableModelSerializer):
 
 class ProductSerializerGet(TranslatableModelSerializer):
     translations = TranslatedFieldsField(shared_model=Plates)
-    categories = CategorySerializerGet(many=True, read_only=True)  # 👈 aquí lo cambiamos
+    categories = CategorySerializerGet(many=True, read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)  # ✅ incluimos ingredientes
 
     class Meta:
         model = Plates
@@ -55,5 +68,5 @@ class ProductSerializerGet(TranslatableModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['price'] = data['price'] + ' €'
+        data['price'] = f"{data['price']} €"  # ✅ corregido para mostrar como string con €
         return data

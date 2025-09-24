@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.products',
     'apps.categories',
+    'apps.ingredients',
     'apps.company',
     'apps.users',
     'drf_spectacular',
