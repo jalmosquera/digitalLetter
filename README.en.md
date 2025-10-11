@@ -1,7 +1,7 @@
 
 # DigitalLetter API
 
-Welcome to **DigitalLetter API** — a RESTful backend built with Django and Django REST Framework to manage categories, products (dishes), and users with differentiated roles.
+Welcome to **DigitalLetter API** — a RESTful backend built with Django and Django REST Framework to manage categories, products, and users with differentiated roles.
 
 ## 🚀 Tech Stack
 
@@ -30,7 +30,7 @@ Extended documentation available:
 ```
 apps/
 ├── categories/    # Category management (with translations)
-├── products/      # Dishes/products, related to categories (ManyToMany, with translations)
+├── products/      # Products, related to categories (ManyToMany, with translations)
 ├── users/         # Advanced user management (client, employe, boss roles)
 ├── company/       # General company info (no translations)
 core/
@@ -44,7 +44,7 @@ core/
 | Resource        | URL Base           | Methods           | Description                                |
 |----------------|--------------------|-------------------|--------------------------------------------|
 | Categories      | /api/categories/   | GET, POST, PUT…   | CRUD for product categories                |
-| Products (Plates) | /api/products/     | GET, POST, PUT…   | CRUD for products related to categories    |
+| Products         | /api/products/     | GET, POST, PUT…   | CRUD for products related to categories    |
 | Employees       | /api/employe/      | GET, POST, PATCH  | User management for `employe` role         |
 | Clients         | /api/clients/      | GET, POST, PATCH  | User management for `client` role          |
 | Auth (JWT)      | /api/token/        | POST              | Login with JWT (SimpleJWT)                 |
@@ -77,7 +77,7 @@ Auto-generated with DRF Spectacular:
 - Roles: `client`, `employe`, `boss`
 - Secure password handling with `set_password`
 
-### Plates (Products)
+### Products
 - Fields: `name`, `description`, `price`, `stock`, `available`, `image`
 - ManyToMany relation with `Category`
 - Translations for `name` and `description` via `django-parler`
@@ -130,7 +130,7 @@ Registered using `DefaultRouter`:
 
 ```python
 router.register(r'categories', CategoriesView, basename='categories')
-router.register(r'products', ProductsViewSetGet, basename='products')
+router.register(r'products', ProductViewSet, basename='products')
 router.register(r'employe', RegisterEmploye, basename='employe')
 router.register(r'clients', RegisterClients, basename='clients')
 ```

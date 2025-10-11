@@ -1,7 +1,7 @@
 
 # 📄 DigitalLetter API / 
 
-Bienvenido a **DigitalLetter API** — un backend RESTful construido con Django y Django REST Framework para manejar categorías, productos (platos) y usuarios con roles diferenciados.
+Bienvenido a **DigitalLetter API** — un backend RESTful construido con Django y Django REST Framework para manejar categorías, productos y usuarios con roles diferenciados.
 
 [![codecov](https://codecov.io/gh/Jal7823/digitalLetter/branch/main/graph/badge.svg)](https://codecov.io/gh/Jal7823/digitalLetter)
 
@@ -85,7 +85,7 @@ Generada automáticamente con **DRF Spectacular**:
 - Roles posibles: `client`, `employe`, `boss`
 - Manejo seguro de contraseñas (`set_password`)
 
-### 🍽 Plates (Productos)
+### 🍽 Products (Productos)
 
 - Campos: `name`, `description`, `price`, `stock`, `available`, `image`
 - Relación ManyToMany con `Category`
@@ -148,7 +148,7 @@ Registrado con `DefaultRouter` para cada viewset. Ejemplo:
 
 ```python
 router.register(r'categories', CategoriesView, basename='categories')
-router.register(r'products', ProductsViewSetGet, basename='products')
+router.register(r'products', ProductViewSet, basename='products')
 router.register(r'employe', RegisterEmploye, basename='employe')
 router.register(r'clients', RegisterClients, basename='clients')
 ```
