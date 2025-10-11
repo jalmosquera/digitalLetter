@@ -1,6 +1,6 @@
 # 🌍 Soporte de Traducciones (`django-parler`)
 
-Este proyecto utiliza `django-parler` para permitir la gestión de contenido multilingüe en los modelos de **Categorías** y **Platos (Products)**.
+Este proyecto utiliza `django-parler` para permitir la gestión de contenido multilingüe en los modelos de **Categorías** y **Products**.
 
 ## 📦 ¿Dónde se usa?
 

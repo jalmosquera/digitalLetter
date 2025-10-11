@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
-from apps.products.models import Plates
+from apps.products.models import Products
 from apps.categories.api.serializers import CategorySerializerGet
 from apps.categories.models import Category
 from apps.ingredients.api.serializers import IngredientSerializer
@@ -8,7 +8,7 @@ from apps.ingredients.models import Ingredients
 
 
 class ProductSerializerPost(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Plates)
+    translations = TranslatedFieldsField(shared_model=Products)
     categories = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Category.objects.all()
@@ -20,7 +20,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
     )
 
     class Meta:
-        model = Plates
+        model = Products
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 
@@ -28,7 +28,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', [])
         ingredients = validated_data.pop('ingredients', [])
-        instance = Plates.objects.create(**validated_data)
+        instance = Products.objects.create(**validated_data)
         instance.categories.set(categories)
         instance.ingredients.set(ingredients)  # ✅ añadimos ingredientes
         for lang_code, translation_fields in translations.items():
@@ -57,12 +57,12 @@ class ProductSerializerPost(TranslatableModelSerializer):
 
 
 class ProductSerializerGet(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Plates)
+    translations = TranslatedFieldsField(shared_model=Products)
     categories = CategorySerializerGet(many=True, read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)  # ✅ incluimos ingredientes
 
     class Meta:
-        model = Plates
+        model = Products
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 

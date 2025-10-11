@@ -52,7 +52,7 @@ def test_create_client(api_client):
 
 @pytest.mark.django_db
 def test_create_employe_requires_staff(api_client, create_user, get_token):
-    staff = create_user("admin", "admin@example.com", "Admin", "adminpass", role='boos', is_staff=True)
+    staff = create_user("admin", "admin@example.com", "Admin", "adminpass", role='boss', is_staff=True)
     token = get_token("admin", "adminpass")
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 

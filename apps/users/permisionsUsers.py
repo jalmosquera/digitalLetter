@@ -13,7 +13,7 @@ class IsEmploye(BasePermission):
 
 class IsBoss(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.role == 'boos')
+        return bool(request.user and request.user.role == 'boss')
     
 class IsStaffOrEmploye(BasePermission):
     def has_permission(self, request, view):

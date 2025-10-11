@@ -1,7 +1,8 @@
 import pytest
 from rest_framework.test import APIClient
 from django.urls import reverse
-from apps.products.models import Plates
+from django.contrib.auth.models import User
+from apps.products.models import Products
 from apps.categories.models import Category
 
 
@@ -10,8 +11,19 @@ def api_client():
     return APIClient()
 
 
+@pytest.fixture
+def user(db):
+    return User.objects.create_user(username="tester", password="pass12345")
+
+
+@pytest.fixture
+def auth_client(user):
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
 @pytest.mark.django_db
-def test_create_product_with_translations_and_categories(api_client):
+def test_create_product_with_translations_and_categories(auth_client):
     # Primero crea categorías
     cat1 = Category.objects.create()
     cat1.set_current_language('es')
@@ -39,7 +51,7 @@ def test_create_product_with_translations_and_categories(api_client):
         "categories": [cat1.pk],
         "image": None
     }
-    response = api_client.post(url, payload, format='json')
+    response = auth_client.post(url, payload, format='json')
     assert response.status_code == 201
     data = response.json()
     assert 'translations' in data
@@ -50,12 +62,12 @@ def test_create_product_with_translations_and_categories(api_client):
 @pytest.mark.django_db
 def test_list_products_only_available(api_client):
     # Producto disponible
-    plate1 = Plates.objects.create(price=5, stock=10, available=True)
+    plate1 = Products.objects.create(price=5, stock=10, available=True)
     plate1.set_current_language('es')
     plate1.name = "Disponible ES"
     plate1.save()
     # Producto no disponible
-    plate2 = Plates.objects.create(price=5, stock=10, available=False)
+    plate2 = Products.objects.create(price=5, stock=10, available=False)
     plate2.set_current_language('es')
     plate2.name = "No disponible ES"
     plate2.save()
@@ -71,7 +83,7 @@ def test_list_products_only_available(api_client):
 
 @pytest.mark.django_db
 def test_retrieve_product(api_client):
-    plate = Plates.objects.create(price=20, stock=5, available=True)
+    plate = Products.objects.create(price=20, stock=5, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -85,8 +97,8 @@ def test_retrieve_product(api_client):
 
 
 @pytest.mark.django_db
-def test_update_product(api_client):
-    plate = Plates.objects.create(price=30, stock=20, available=True)
+def test_update_product(auth_client):
+    plate = Products.objects.create(price=30, stock=20, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -115,7 +127,7 @@ def test_update_product(api_client):
         "categories": [cat.pk],
         "image": None
     }
-    response = api_client.put(url, payload, format='json')
+    response = auth_client.put(url, payload, format='json')
     assert response.status_code == 200
     data = response.json()
     assert data['translations']['es']['name'] == "Plato Editado ES"
@@ -123,8 +135,8 @@ def test_update_product(api_client):
 
 
 @pytest.mark.django_db
-def test_partial_update_product(api_client):
-    plate = Plates.objects.create(price=15, stock=30, available=True)
+def test_partial_update_product(auth_client):
+    plate = Products.objects.create(price=15, stock=30, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -138,23 +150,23 @@ def test_partial_update_product(api_client):
             }
         }
     }
-    response = api_client.patch(url, payload, format='json')
+    response = auth_client.patch(url, payload, format='json')
     assert response.status_code == 200
     data = response.json()
     assert data['translations']['es']['name'] == "Plato Parcial"
 
 
 @pytest.mark.django_db
-def test_delete_product(api_client):
-    plate = Plates.objects.create(price=10, stock=10, available=True)
+def test_delete_product(auth_client):
+    plate = Products.objects.create(price=10, stock=10, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.save()
 
     url = reverse('products-detail', args=[plate.pk])
-    response = api_client.delete(url)
+    response = auth_client.delete(url)
     assert response.status_code == 204
-    assert Plates.objects.filter(pk=plate.pk).count() == 0
+    assert Products.objects.filter(pk=plate.pk).count() == 0
 
 
 #TODO revisar test en todos los modelos de la app

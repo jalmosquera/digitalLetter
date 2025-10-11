@@ -10,7 +10,7 @@ Este documento describe cómo está estructurado y organizado el código del pro
 digitalLetter/
 ├── apps/
 │ ├── categories/ # Gestión de categorías con soporte multilenguaje
-│ ├── products/ # Gestión de productos (platos), con traducciones y relación ManyToMany con categorías
+│ ├── products/ # Gestión de productos, con traducciones y relación ManyToMany con categorías
 │ ├── users/ # Gestión avanzada de usuarios con roles y permisos
 │ └── company/ # Datos generales y configuración de la empresa
 ├── core/
@@ -41,7 +41,7 @@ digitalLetter/
 ## 📦 Apps y su responsabilidad
 
 - **Categories:** gestión de categorías, con soporte para traducciones usando `django-parler`.
-- **Products:** gestión de productos/platos, con traducciones y relación ManyToMany a categorías.
+- **Products:** gestión de productos, con traducciones y relación ManyToMany a categorías.
 - **Users:** gestión avanzada de usuarios, roles (client, employe, boss) y permisos personalizados.
 - **Company:** datos generales y configuración administrativa de la empresa.
 

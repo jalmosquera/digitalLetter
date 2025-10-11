@@ -22,7 +22,7 @@ class UserManager(BaseUserManager):
         )
 
         user.is_staff = True
-        user.role = 'boos'
+        user.role = 'boss'
         user.save()
         return user
 
@@ -34,8 +34,8 @@ class Users(AbstractUser):
             "client",
         ),
         (
-            "boos",
-            "boos",
+            "boss",
+            "boss",
         ),
         (
             "employe",
@@ -65,7 +65,7 @@ class Users(AbstractUser):
     def has_perm(self, perm, obj=None):
         return True
 
-    def has_module_perms(self, usuarios_label):
+    def has_module_perms(self, app_label):
         return True
 
     USERNAME_FIELD = "username"

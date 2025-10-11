@@ -37,8 +37,8 @@ Puedes consultar la documentación extendida aquí:
 ## 📦 Estructura principal
 
 - `apps/categories/`: Gestión de categorías (con soporte de traducciones)
-- `apps/products/`: Gestión de platos/productos, relacionados con categorías (ManyToMany, con traducciones)
-- `apps/users/`: Gestión avanzada de usuarios con roles (`client`, `employe`, `boos`)
+- `apps/products/`: Gestión de productos, relacionados con categorías (ManyToMany, con traducciones)
+- `apps/users/`: Gestión avanzada de usuarios con roles (`client`, `employe`, `boss`)
 - `apps/company/`: Datos generales de la empresa (sin traducciones)
 - `core/`: Configuración global del proyecto (`settings`, `urls`, `wsgi`)
 
@@ -49,7 +49,7 @@ Puedes consultar la documentación extendida aquí:
 | Recurso           | URL base                | Métodos          | Descripción                            |
 | ----------------- | ----------------------- | ---------------- | -------------------------------------- |
 | Categorías        | `/api/categories/`      | GET, POST, PUT…  | CRUD de categorías                     |
-| Platos            | `/api/products/`        | GET, POST, PUT…  | CRUD de platos vinculados a categorías |
+| Productos         | `/api/products/`        | GET, POST, PUT…  | CRUD de productos vinculados a categorías |
 | Empleados         | `/api/employe/`         | GET, POST, PATCH | Gestión de usuarios con rol `employe`  |
 | Clientes          | `/api/clients/`         | GET, POST, PATCH | Gestión de usuarios con rol `client`   |
 | Autenticación     | `/api/token/`           | POST             | Login con JWT                          |
@@ -82,7 +82,7 @@ Generada automáticamente con **DRF Spectacular**:
 
 - Hereda de `AbstractUser`
 - Campos personalizados: `role`, `address`, `location`, `province`, `phone`, `image`
-- Roles posibles: `client`, `employe`, `boos`
+- Roles posibles: `client`, `employe`, `boss`
 - Manejo seguro de contraseñas (`set_password`)
 
 ### 🍽 Plates (Productos)
@@ -137,7 +137,7 @@ pytest
 ```
 
 - Usa `pytest.mark.django_db` para pruebas que usen la base de datos
-- Las pruebas cubren categorías, platos, usuarios y permisos
+- Las pruebas cubren categorías, productos, usuarios y permisos
 - Evita pruebas con imágenes si no son necesarias
 
 ---

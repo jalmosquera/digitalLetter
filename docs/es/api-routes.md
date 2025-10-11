@@ -8,7 +8,7 @@ Este documento detalla los endpoints principales de la API DigitalLetter, los m�
 | Recurso           | URL base                | Métodos          | Descripción                           |
 | ----------------- | ----------------------- | ---------------- | ------------------------------------- |
 | Categorías        | `/api/categories/`      | GET, POST, PUT, PATCH, DELETE | CRUD de categorías                  |
-| Platos            | `/api/products/`        | GET, POST, PUT, PATCH, DELETE | CRUD de platos, vinculados a categorías |
+| Productos         | `/api/products/`        | GET, POST, PUT, PATCH, DELETE | CRUD de productos, vinculados a categorías |
 | Empleados         | `/api/employe/`         | GET, POST, PATCH  | Gestión de usuarios con rol `employe` |
 | Clientes          | `/api/clients/`         | GET, POST, PATCH  | Gestión de usuarios con rol `client`  |
 | Autenticación     | `/api/token/`           | POST             | Login con JWT                       |
