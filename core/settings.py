@@ -139,7 +139,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # user model
-AUTH_USER_MODEL = "users.Users"
+AUTH_USER_MODEL = "users.User"
 
 # REST Framework settings
 REST_FRAMEWORK = {

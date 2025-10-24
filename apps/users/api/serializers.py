@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from ..models import Users
+from ..models import User
 
 
 class SerializerClients(serializers.ModelSerializer):
     class Meta:
-        model = Users
+        model = User
         fields = ['username', 'email', 'name', 'password']
 
 
@@ -15,12 +15,12 @@ class SerializerEmploye(serializers.ModelSerializer):
         return data
 
     class Meta:
-        model = Users
+        model = User
         fields = ['username', 'name', 'email', 'password']
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Users
+        model = User
         fields = ['id', 'username', 'name', 'email', 'role', 'image', 'address', 'location', 'province', 'phone']
         # read_only_fields = fields
 

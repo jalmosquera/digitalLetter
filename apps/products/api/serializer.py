@@ -1,26 +1,26 @@
 from rest_framework import serializers
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
-from apps.products.models import Products
+from apps.products.models import Product
 from apps.categories.api.serializers import CategorySerializerGet
 from apps.categories.models import Category
 from apps.ingredients.api.serializers import IngredientSerializer
-from apps.ingredients.models import Ingredients
+from apps.ingredients.models import Ingredient
 
 
 class ProductSerializerPost(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Products)
+    translations = TranslatedFieldsField(shared_model=Product)
     categories = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Category.objects.all()
     )
     ingredients = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=Ingredients.objects.all(),
+        queryset=Ingredient.objects.all(),
         required=False
     )
 
     class Meta:
-        model = Products
+        model = Product
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 
@@ -28,7 +28,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', [])
         ingredients = validated_data.pop('ingredients', [])
-        instance = Products.objects.create(**validated_data)
+        instance = Product.objects.create(**validated_data)
         instance.categories.set(categories)
         instance.ingredients.set(ingredients)  # ✅ añadimos ingredientes
         for lang_code, translation_fields in translations.items():
@@ -57,12 +57,12 @@ class ProductSerializerPost(TranslatableModelSerializer):
 
 
 class ProductSerializerGet(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Products)
+    translations = TranslatedFieldsField(shared_model=Product)
     categories = CategorySerializerGet(many=True, read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)  # ✅ incluimos ingredientes
 
     class Meta:
-        model = Products
+        model = Product
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 

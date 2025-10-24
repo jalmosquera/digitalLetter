@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class Users(AbstractUser):
+class User(AbstractUser):
     ROLE = (
         (
             "client",
@@ -43,9 +43,12 @@ class Users(AbstractUser):
         ),
     )
 
+    # Custom manager
+    objects = UserManager()
+
     # data base
     username = models.CharField("Username", max_length=50, unique=True)
-    name = models.CharField("Name", max_length=100, unique=True)
+    name = models.CharField("Name", max_length=100)
     email = models.EmailField("Email", max_length=254, unique=True)
     image = models.ImageField(
         "Image", upload_to="avatar", null=True, blank=True, default="avatar/default.jpg"
@@ -54,10 +57,13 @@ class Users(AbstractUser):
     is_staff = models.BooleanField(default=False)
     role = models.CharField("Role", choices=ROLE, max_length=50, default="client")
     # data
-    address = models.CharField("Address", max_length=250)
-    location = models.CharField("Locatin", max_length=250)
-    province = models.CharField("Provincia", max_length=100)
-    phone = models.IntegerField("Phone", null=True, blank=True)
+    address = models.CharField("Address", max_length=250, blank=True, null=True)
+    location = models.CharField("Location", max_length=250, blank=True, null=True)
+    province = models.CharField("Province", max_length=100, blank=True, null=True)
+    phone = models.CharField("Phone", max_length=20, blank=True, null=True)
+
+    class Meta:
+        db_table = 'users_users'  # Keep the old table name to avoid migration issues
 
     def __str__(self):
         return self.name

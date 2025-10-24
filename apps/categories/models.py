@@ -8,8 +8,8 @@ class Category(TranslatableModel):
         description=models.TextField('Description', blank=True, null=True)
     )
     image = models.ImageField(upload_to="categories/", blank=True, null=True)
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Category"

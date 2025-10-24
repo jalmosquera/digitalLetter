@@ -1,19 +1,19 @@
 from rest_framework import serializers
-from apps.ingredients.models import Ingredients
+from apps.ingredients.models import Ingredient
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
 
 
 class IngredientSerializer(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Ingredients)
+    translations = TranslatedFieldsField(shared_model=Ingredient)
 
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = ['id', 'translations', 'icon']
         
 
     def create(self, validated_data):
         translations = validated_data.pop('translations', {})
-        instance = Ingredients.objects.create(**validated_data)
+        instance = Ingredient.objects.create(**validated_data)
         for lang_code, fields in translations.items():
             instance.set_current_language(lang_code)
             for attr, value in fields.items():
