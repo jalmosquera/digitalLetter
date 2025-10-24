@@ -6,8 +6,8 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from apps.users.permisionsUsers import IsStaff, IsBoss,IsStaffOrEmploye
-from apps.users.models import Users
+from apps.users.permisionsUsers import IsStaff, IsBoss, IsStaffOrEmploye
+from apps.users.models import User
 from apps.users.api.serializers import (
     SerializerClients,
     SerializerEmploye,
@@ -63,7 +63,7 @@ from apps.users.api.serializers import (
     ),
 )
 class RegisterEmploye(viewsets.ModelViewSet):
-    queryset = Users.objects.filter(role="employe")
+    queryset = User.objects.filter(role="employe")
     serializer_class = SerializerEmploye
     permission_classes = [IsStaff]
 
@@ -133,7 +133,7 @@ class RegisterEmploye(viewsets.ModelViewSet):
     ),
 )
 class RegisterClients(viewsets.ModelViewSet):
-    queryset = Users.objects.filter(role="client")
+    queryset = User.objects.filter(role="client")
     serializer_class = SerializerClients
 
     def create(self, request, *args, **kwargs):
@@ -162,10 +162,10 @@ class UsersListViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Users.objects.all()
+            return User.objects.all()
         elif user.role == "employe":
-            return Users.objects.filter(Q(role="client") | Q(id=user.id))
-        return Users.objects.none()
+            return User.objects.filter(Q(role="client") | Q(id=user.id))
+        return User.objects.none()
 
     def list(self, request, *args, **kwargs):
         if not (request.user.is_staff or request.user.role == "employe"):
