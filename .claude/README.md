@@ -13,7 +13,8 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 │   ├── test.md             # Creador de tests
 │   ├── fix.md              # Corrector de código
 │   ├── review.md           # Revisor de código
-│   └── doc.md              # Documentador
+│   ├── doc-api.md          # Documentador de API (README, drf-spectacular)
+│   └── doc-code.md         # Documentador de código (docstrings, type hints)
 ├── docs/            # Guías y convenciones
 │   ├── documentation-guidelines.md
 │   ├── git-conventions.md
@@ -86,16 +87,27 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 - Tests útiles y mantenibles
 - NO busca 100% cobertura
 
-### 7. DOC
-**Uso:** Crear documentación concisa
+### 7. DOC-API
+**Uso:** Documentación externa (README, API)
 ```
-@doc Documenta el proyecto
-@doc Actualiza el README
+@doc-api Crea README bilingüe
+@doc-api Documenta endpoints con drf-spectacular
 ```
-- README de 200-400 líneas
-- Quick Start en 5 minutos
-- Bilingüe (inglés/español)
-- NO documentación exhaustiva
+- README.md (inglés) + README_ES.md (español)
+- Documentación de API con Swagger/ReDoc
+- Guías de setup y deployment
+- Enfocado en usuarios externos
+
+### 8. DOC-CODE
+**Uso:** Documentación interna del código
+```
+@doc-code Documenta el modelo Product
+@doc-code Agrega docstrings a los serializers
+```
+- Google Style Docstrings en inglés
+- Type hints para funciones
+- Comentarios inline explicativos
+- Enfocado en desarrolladores
 
 ## 🔄 Flujos de Trabajo
 
@@ -104,8 +116,9 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 1. @project-manager → Planifica el proyecto
 2. @setup → Crea estructura
 3. @build → Implementa features
-4. @test → Crea tests
-5. @doc → Documenta
+4. @doc-code → Documenta código interno
+5. @test → Crea tests
+6. @doc-api → Crea README y documentación API
 ```
 
 ### Flujo 2: Desarrollo de Feature
@@ -113,8 +126,9 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 1. @build → Crea la feature
 2. @review → Analiza el código
 3. @fix → Corrige problemas
-4. @test → Valida con tests
-5. @doc → Actualiza docs
+4. @doc-code → Documenta código nuevo
+5. @test → Valida con tests
+6. @doc-api → Actualiza README/API docs
 ```
 
 ### Flujo 3: Corrección de Bug
@@ -151,10 +165,11 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
    - REVIEW para analizar
    - FIX para corregir
    - TEST para testear
-   - DOC para documentar
+   - DOC-API para documentación externa
+   - DOC-CODE para documentación interna
 
 2. **Flujo secuencial recomendado**
-   - BUILD → REVIEW → FIX → TEST → DOC
+   - BUILD → DOC-CODE → REVIEW → FIX → TEST → DOC-API
 
 3. **REVIEW + FIX trabajan juntos**
    - REVIEW detecta → FIX implementa
@@ -163,10 +178,14 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
    - EJECUCIÓN: Para instrucciones claras
    - CONSULTOR: Para ideas vagas
 
-5. **Tests pragmáticos**
+5. **Dos tipos de documentación**
+   - DOC-API: README, Swagger, guías para usuarios
+   - DOC-CODE: Docstrings, type hints para desarrolladores
+
+6. **Tests pragmáticos**
    - 60-80% cobertura es suficiente
 
-6. **Docs concisas**
+7. **Docs concisas**
    - README de 300 líneas > 10 archivos
 
 ## 🎯 Tabla de Decisión Rápida
@@ -179,7 +198,8 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 | Revisar código | REVIEW |
 | Corregir problemas | FIX |
 | Crear tests | TEST |
-| Documentar | DOC |
+| Documentar API/README | DOC-API |
+| Documentar código interno | DOC-CODE |
 
 ## 📖 Más Información
 
@@ -202,7 +222,8 @@ Este directorio contiene los agentes personalizados y guías para el proyecto di
 
 3. **Documentación:**
    ```
-   @doc Documenta el proyecto
+   @doc-api Crea README bilingüe
+   @doc-code Documenta modelos y vistas
    ```
 
 ---
