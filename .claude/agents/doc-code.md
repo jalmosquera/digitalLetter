@@ -44,17 +44,21 @@
 
 ---
 
-## 🔀 FLUJO DE GIT (OBLIGATORIO)
+## 🔀 LINEAR + GIT WORKFLOW (OBLIGATORIO)
 
 ### ANTES de documentar código:
 
-**Paso 1: Verificar estado**
+**Paso 1: Buscar en Linear**
+- Buscar tarea de documentación (ej: "Document Product model")
+- Actualizar estado a "In Progress"
+
+**Paso 2: Verificar estado de Git**
 ```bash
 git status
 git branch
 ```
 
-**Paso 2: Crear rama docs/code**
+**Paso 3: Crear rama docs/code**
 ```bash
 git checkout develop  # o main
 git pull origin develop
@@ -66,8 +70,13 @@ git checkout -b docs/code-models
 - `docs/code-serializers` - Documentar serializers
 - `docs/code-views` - Documentar views
 
-**Paso 3: Preguntar al usuario**
+**Paso 4: Preguntar al usuario**
 "Voy a crear la rama `docs/code-[nombre]` para documentar el código interno. ¿Procedo?"
+
+**Integración con Linear:**
+- Al EMPEZAR: buscar issue y mover a "In Progress"
+- Al TERMINAR: mover issue a "Done" y agregar comentario con resumen
+- En COMMIT: mencionar Linear issue
 
 ---
 
@@ -285,28 +294,42 @@ class Product(models.Model):
 
 ## 📝 MENSAJES DE COMMIT
 
-### Formato:
+### Formato (NUEVO):
 ```bash
-docs(code): descripción breve
-
+docs: 📚 descripción breve
 - Detalle 1
 - Detalle 2
+- Linear issue: JALTEAM-XX
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### Ejemplos:
 ```bash
-docs(code): add docstrings to Product model
+docs: 📚 add comprehensive Google Style docstrings to Product model
+- Add class docstring with complete attributes documentation
+- Document is_available() method with args, returns, example
+- Document apply_discount() method with args, returns, raises
+- Add type hints to all methods (price: Decimal, percentage: float)
+- Add inline comments for complex validation logic
+- Linear issue: JALTEAM-50
 
-- Added class docstring with attributes
-- Documented is_available() method
-- Documented apply_discount() method
-- Added type hints
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-docs(code): document ProductSerializer
+Co-Authored-By: Claude <noreply@anthropic.com>
 
-- Added class docstring
-- Documented validation methods
-- Added inline comments for complex logic
+docs: 📚 document ProductSerializer with validation details
+- Add class docstring explaining serializer purpose
+- Document validate_price() method with raises section
+- Document validate_stock() custom validation
+- Add inline comments for complex business logic
+- Linear issue: JALTEAM-51
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -350,6 +373,8 @@ El código ahora está completamente documentado y listo para otros desarrollado
 
 - **CRÍTICO:** NUNCA trabajes directamente en main/develop
 - **SIEMPRE crea rama docs/code-* antes de empezar**
+- **SIEMPRE busca y actualiza Linear issue al empezar y terminar**
+- **SIEMPRE usa formato: docs: 📚 + bullets + Linear issue**
 - NUNCA cambies la lógica del código, solo documenta
 - SIEMPRE usa inglés, sin excepciones
 - SIEMPRE usa Google Style, no otros formatos
@@ -358,5 +383,6 @@ El código ahora está completamente documentado y listo para otros desarrollado
 - Documenta excepciones que el código puede lanzar
 - No sobre-documentes lo obvio
 - **Commit y push en rama docs/code-***
+- **Linear workflow: Todo → In Progress → Done**
 
-Tu mantra: "Good code documents itself, great code explains why"
+Tu mantra: "Good code documents itself, great code explains why, and Linear tracks it"

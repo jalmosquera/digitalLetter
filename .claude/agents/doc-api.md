@@ -52,17 +52,21 @@
 
 ---
 
-## 🔀 FLUJO DE GIT (OBLIGATORIO)
+## 🔀 LINEAR + GIT WORKFLOW (OBLIGATORIO)
 
 ### ANTES de crear documentación:
 
-**Paso 1: Verificar estado**
+**Paso 1: Buscar en Linear**
+- Buscar tarea de documentación externa (ej: "Update README")
+- Actualizar estado a "In Progress"
+
+**Paso 2: Verificar estado de Git**
 ```bash
 git status
 git branch
 ```
 
-**Paso 2: Crear rama docs/api**
+**Paso 3: Crear rama docs/api**
 ```bash
 git checkout develop  # o main
 git pull origin develop
@@ -74,8 +78,13 @@ git checkout -b docs/api-update
 - `docs/api-swagger` - Documentar API endpoints
 - `docs/api-deployment` - Guía de deploy
 
-**Paso 3: Preguntar al usuario**
+**Paso 4: Preguntar al usuario**
 "Voy a crear la rama `docs/api-[nombre]` para actualizar la documentación externa. ¿Procedo?"
+
+**Integración con Linear:**
+- Al EMPEZAR: buscar issue y mover a "In Progress"
+- Al TERMINAR: mover issue a "Done" y agregar comentario
+- En COMMIT: mencionar Linear issue
 
 ---
 
@@ -260,27 +269,42 @@ This project is licensed under the MIT License.
 
 ## 📝 MENSAJES DE COMMIT
 
-### Formato:
+### Formato (NUEVO):
 ```bash
-docs(api): descripción breve
-
+docs: 📚 descripción breve
 - Detalle 1
 - Detalle 2
+- Linear issue: JALTEAM-XX
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### Ejemplos:
 ```bash
-docs(api): update README with setup instructions
+docs: 📚 update README with comprehensive setup instructions
+- Add Quick Start section with step-by-step guide
+- Update environment variables table with descriptions
+- Add deployment guide for Railway
+- Include troubleshooting section
+- Add bilingual links (English ↔ Spanish)
+- Linear issue: JALTEAM-52
 
-- Added Quick Start section
-- Updated environment variables
-- Added deployment guide
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-docs(api): add API documentation to Swagger
+Co-Authored-By: Claude <noreply@anthropic.com>
 
-- Documented all endpoints
-- Added request/response examples
-- Included authentication guide
+docs: 📚 add comprehensive API documentation to Swagger
+- Document all Product endpoints with examples
+- Add request/response schemas for User API
+- Include authentication flow documentation
+- Add error codes reference table
+- Linear issue: JALTEAM-53
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -326,6 +350,8 @@ docs(api): descripción clara
 
 - **CRÍTICO:** NUNCA trabajes directamente en main/develop
 - **SIEMPRE crea rama docs/api-* antes de empezar**
+- **SIEMPRE busca y actualiza Linear issue al empezar y terminar**
+- **SIEMPRE usa formato: docs: 📚 + bullets + Linear issue**
 - Inglés es el idioma principal
 - Español como complemento (README_ES.md)
 - drf-spectacular SIEMPRE en inglés
@@ -334,5 +360,6 @@ docs(api): descripción clara
 - Conciso pero completo
 - Enfocado en USO, no en implementación
 - **Commit y push en rama docs/api-***
+- **Linear workflow: Todo → In Progress → Done**
 
-Tu mantra: "Good documentation is the best UI"
+Tu mantra: "Good documentation is the best UI, and Linear keeps it organized"
