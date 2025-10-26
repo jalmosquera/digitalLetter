@@ -64,36 +64,59 @@ feature/* (desarrollo)
 ### Formato estándar
 
 ```
-tipo(scope): descripción corta
+tipo: emoji descripción corta
+- Detalle específico 1
+- Detalle específico 2
+- Detalle específico 3
+- Linear issue: TEAM-123
 
-Cuerpo opcional con más detalles
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Footer opcional (issues, breaking changes)
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-### Tipos de commits
+### Tipos de commits con emojis
 
-| Tipo | Uso | Ejemplo |
-|------|-----|---------|
-| `feat` | Nueva funcionalidad | `feat: agregar sistema de login` |
-| `fix` | Corrección de bugs | `fix: corregir validación de email` |
-| `docs` | Cambios en documentación | `docs: actualizar README` |
-| `style` | Formato (no afecta código) | `style: formatear código con black` |
-| `refactor` | Refactorización | `refactor: simplificar lógica de auth` |
-| `test` | Agregar o modificar tests | `test: agregar tests para usuario` |
-| `chore` | Tareas de mantenimiento | `chore: actualizar dependencias` |
-| `perf` | Mejoras de performance | `perf: optimizar query de DB` |
-| `ci` | Cambios en CI/CD | `ci: agregar GitHub Actions` |
-| `build` | Cambios en build | `build: actualizar webpack config` |
+| Tipo | Emoji | Uso | Ejemplo |
+|------|-------|-----|---------|
+| `feat` | ✨ | Nueva funcionalidad | `feat: ✨ add user authentication system` |
+| `fix` | 🔧 | Corrección de bugs | `fix: 🔧 correct email validation logic` |
+| `docs` | 📚 | Cambios en documentación | `docs: 📚 update README with setup guide` |
+| `style` | 💄 | Formato (no afecta código) | `style: 💄 format code with black` |
+| `refactor` | ♻️ | Refactorización | `refactor: ♻️ simplify auth logic` |
+| `test` | 🧪 | Agregar o modificar tests | `test: 🧪 add user model tests` |
+| `chore` | 🔨 | Tareas de mantenimiento | `chore: 🔨 update dependencies` |
+| `perf` | ⚡ | Mejoras de performance | `perf: ⚡ optimize database queries` |
+| `ci` | 👷 | Cambios en CI/CD | `ci: 👷 add GitHub Actions workflow` |
+| `build` | 📦 | Cambios en build | `build: 📦 update webpack config` |
+
+### Ejemplo completo de commit
+
+```bash
+feat: ✨ add Product model with inventory management
+- Create Product model with name, price, stock fields
+- Add price validation (must be positive)
+- Implement is_available() method
+- Add stock management methods
+- Configure admin interface for Product
+- Linear issue: JALTEAM-42
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
 
 ### Reglas importantes
 
-- ✅ Usar minúsculas
-- ✅ Modo imperativo ("agregar" no "agregado")
-- ✅ Sin punto al final
-- ✅ Máximo 50 caracteres en la primera línea
-- ✅ Descripción clara y concisa
+- ✅ Usar formato: `tipo: emoji descripción`
+- ✅ Agregar bullets (-) con detalles específicos
+- ✅ Mencionar Linear issue si existe
+- ✅ Incluir firma de Claude Code al final
+- ✅ Modo imperativo ("add" no "added")
+- ✅ Primera línea máximo 72 caracteres
+- ✅ Descripción clara y concisa en bullets
 - ❌ No usar commits vagos como "fix", "update", "changes"
+- ❌ No olvidar el emoji después del tipo
 
 ## 🛡️ Protección de ramas
 
