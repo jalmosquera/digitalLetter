@@ -1,28 +1,55 @@
-# core/settings/production.py
+# core/production.py
+"""
+Production settings for Railway deployment.
+To use: Set environment variable DJANGO_SETTINGS_MODULE=core.production
+"""
 
-from .base import *
+from .settings import *
+import dj_database_url
+from decouple import config
+import os
 
+# Override DEBUG for production
 DEBUG = False
 
-ALLOWED_HOSTS = ['tusitio.com']
+# Get allowed hosts from environment variable
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.railway.app').split(',')
 
-# Configuración para base de datos productiva (Postgres, MySQL, etc)
+# Database configuration with Railway PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nombre_db',
-        'USER': 'usuario',
-        'PASSWORD': 'contraseña',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
-# Seguridad
+# Static files configuration for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Remove STATICFILES_DIRS in production (it conflicts with STATIC_ROOT)
+STATICFILES_DIRS = []
+
+# Media files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# CORS configuration from environment
+cors_origins = config('CORS_ALLOWED_ORIGINS', default='')
+if cors_origins:
+    CORS_ALLOWED_ORIGINS = cors_origins.split(',')
+else:
+    CORS_ALLOWED_ORIGINS = []
+
+# Security settings
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# Variables sensibles como SECRET_KEY deben venir de variables de entorno
+# Get SECRET_KEY from environment
+SECRET_KEY = config('SECRET_KEY')
 
-# Configuración para servicios externos, almacenamiento, etc
+# Language code from environment
+LANGUAGE_CODE = config('LANGUAGE_CODE', default='es')

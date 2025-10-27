@@ -26,3 +26,10 @@ referencing==0.36.2
 rpds-py==0.25.1
 sqlparse==0.5.3
 uritemplate==4.2.0
+
+# Railway deployment dependencies
+gunicorn==23.0.0
+dj-database-url==2.2.0
+psycopg2-binary==2.9.10
+whitenoise==6.8.2
+python-decouple==3.9
