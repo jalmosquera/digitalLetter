@@ -7,12 +7,18 @@ To use: Set environment variable DJANGO_SETTINGS_MODULE=core.production
 from .settings import *
 import dj_database_url
 import os
+import sys
 
 # Override DEBUG for production
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Get SECRET_KEY from environment
+# Get SECRET_KEY from environment with validation
 SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY or SECRET_KEY == 'django-insecure-CHANGE-THIS-IN-PRODUCTION':
+    raise ValueError(
+        "SECRET_KEY environment variable must be set in production. "
+        "Generate a secure key with: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'"
+    )
 
 # Get allowed hosts from environment variable
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '.railway.app')
