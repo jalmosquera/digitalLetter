@@ -19,7 +19,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from apps.categories.models import Category
 from apps.categories.api.serializers import (
@@ -28,6 +28,66 @@ from apps.categories.api.serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['categories'],
+        summary='List all categories',
+        description='Retrieve a list of all categories with their translations',
+        responses={
+            200: CategorySerializerGet(many=True),
+        },
+    ),
+    create=extend_schema(
+        tags=['categories'],
+        summary='Create a new category',
+        description='Create a new category with multilingual support',
+        request=CategorySerializerPost,
+        responses={
+            201: CategorySerializerGet,
+            400: OpenApiResponse(description='Invalid data'),
+        },
+    ),
+    retrieve=extend_schema(
+        tags=['categories'],
+        summary='Retrieve a category',
+        description='Get details of a specific category by ID',
+        responses={
+            200: CategorySerializerGet,
+            404: OpenApiResponse(description='Category not found'),
+        },
+    ),
+    update=extend_schema(
+        tags=['categories'],
+        summary='Update a category',
+        description='Fully update a category and its translations',
+        request=CategorySerializerPost,
+        responses={
+            200: CategorySerializerGet,
+            400: OpenApiResponse(description='Invalid data'),
+            404: OpenApiResponse(description='Category not found'),
+        },
+    ),
+    partial_update=extend_schema(
+        tags=['categories'],
+        summary='Partially update a category',
+        description='Partially update a category and its translations',
+        request=CategorySerializerPost,
+        responses={
+            200: CategorySerializerGet,
+            400: OpenApiResponse(description='Invalid data'),
+            404: OpenApiResponse(description='Category not found'),
+        },
+    ),
+    destroy=extend_schema(
+        tags=['categories'],
+        summary='Delete a category',
+        description='Delete a category and all its translations',
+        responses={
+            204: OpenApiResponse(description='Category deleted successfully'),
+            404: OpenApiResponse(description='Category not found'),
+        },
+    ),
+)
 class CategoriesView(viewsets.ModelViewSet):
     """ViewSet for managing product categories with multilingual support.
 
