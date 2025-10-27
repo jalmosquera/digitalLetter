@@ -176,3 +176,5 @@ cython_debug/
 # Allure report output
 reports/
 allure-reports/
+
+.claude/ 
