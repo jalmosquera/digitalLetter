@@ -70,21 +70,26 @@ from apps.products.api.serializer import ProductSerializerPost, ProductSerialize
     ),
 )
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(available=True)
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['available', 'categories', 'ingredients']
     ordering_fields = ['price', 'stock', 'created_at', 'updated_at']
     search_fields = ['translations__name', 'translations__description']
 
-    def get_serializer_class(self) -> type[Serializer]:
-        """Return the appropriate serializer class based on the action.
-
-        Returns:
-            ProductSerializerGet for list and retrieve actions (read operations).
-            ProductSerializerPost for create, update, and delete actions
-                (write operations).
+    def get_queryset(self):
         """
+        Filter products available only for the ‘list’ action.
+        For other actions (retrieve, update, etc.), return all products.
+        """
+        queryset = Product.objects.all()
+        
+        if self.action == 'list':
+            queryset = queryset.filter(available=True)
+        
+        return queryset
+
+    def get_serializer_class(self) -> type[Serializer]:
+        """Return the appropriate serializer class based on the action."""
         if self.action in ['list', 'retrieve']:
             return ProductSerializerGet
         return ProductSerializerPost
