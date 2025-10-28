@@ -16,3 +16,16 @@ DATABASES = {
 
 # Otros settings específicos para desarrollo, ej:
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+from datetime import timedelta
+
+# Agregar después de REST_FRAMEWORK o al final del archivo
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
