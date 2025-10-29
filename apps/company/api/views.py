@@ -17,6 +17,7 @@ from typing import Any
 
 from rest_framework import viewsets
 from rest_framework.serializers import Serializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.response import Response
 
@@ -66,5 +67,29 @@ from apps.company.api.serializers import CompanySerializer
     ),
 )
 class CompanyView(viewsets.ModelViewSet):
+    """ViewSet for managing company information.
+
+    Public access (AllowAny):
+        - list: GET /api/company/ - List all companies
+        - retrieve: GET /api/company/{id}/ - Get company details
+
+    Authenticated access only (IsAuthenticated):
+        - create: POST /api/company/
+        - update: PUT /api/company/{id}/
+        - partial_update: PATCH /api/company/{id}/
+        - destroy: DELETE /api/company/{id}/
+    """
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+
+    def get_permissions(self):
+        """Return appropriate permission classes based on the action.
+
+        Returns:
+            list: Permission classes for the current action.
+                - AllowAny for read operations (list, retrieve)
+                - IsAuthenticated for write operations (create, update, partial_update, destroy)
+        """
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
