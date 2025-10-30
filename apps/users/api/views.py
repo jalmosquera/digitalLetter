@@ -203,6 +203,7 @@ class RegisterEmploye(viewsets.ModelViewSet):
 class RegisterClients(viewsets.ModelViewSet):
     queryset = User.objects.filter(role="client")
     serializer_class = SerializerClients
+    permission_classes = [AllowAny]  # Allow public registration
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Register a new client account with hashed password.
