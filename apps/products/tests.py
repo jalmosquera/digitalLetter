@@ -102,3 +102,27 @@ class ProductModelTest(TestCase):
 
         product.set_current_language('es')
         self.assertEqual(product.name, "Pizza Hawaiana")
+
+    def test_be_extra_default_false(self):
+        """Test be_extra field defaults to False."""
+        product = Product.objects.create(price=Decimal('8.99'), stock=15)
+        self.assertFalse(product.be_extra)
+
+    def test_be_extra_can_be_set_true(self):
+        """Test be_extra field can be set to True."""
+        product = Product.objects.create(
+            price=Decimal('2.50'),
+            stock=100,
+            be_extra=True
+        )
+        self.assertTrue(product.be_extra)
+
+    def test_be_extra_field_in_model(self):
+        """Test be_extra field exists and has correct properties."""
+        product = Product.objects.create(price=Decimal('5.00'), stock=50)
+        field = Product._meta.get_field('be_extra')
+        self.assertEqual(field.verbose_name, 'Can be Extra')
+        self.assertEqual(
+            field.help_text,
+            'Indicates if this product can be added as an extra to other products'
+        )
