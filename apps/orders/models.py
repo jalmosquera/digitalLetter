@@ -26,9 +26,9 @@ class Order(models.Model):
         status (str): Current order status. Choices: 'pending', 'confirmed',
             'completed', 'cancelled'. Defaults to 'pending'.
         total_price (Decimal): Total price of the order (calculated automatically).
-        delivery_address (str): Street address for delivery.
-        delivery_location (str): City or locality for delivery.
-        delivery_province (str): Province or state for delivery (optional).
+        delivery_street (str): Street name for delivery.
+        delivery_house_number (str): House number for delivery.
+        delivery_location (str): City or locality for delivery (Ardales or Carratraca).
         phone (str): Contact phone number for delivery.
         notes (str): Optional additional notes or instructions (max 500 chars).
         created_at (datetime): Timestamp when order was created.
@@ -40,12 +40,17 @@ class Order(models.Model):
         - completed: Order delivered and completed
         - cancelled: Order cancelled
 
+    Location Choices:
+        - ardales: Ardales
+        - carratraca: Carratraca
+
     Example:
         >>> user = User.objects.get(id=1)
         >>> order = Order.objects.create(
         ...     user=user,
-        ...     delivery_address='Calle 123',
-        ...     delivery_location='Madrid',
+        ...     delivery_street='Calle Principal',
+        ...     delivery_house_number='123',
+        ...     delivery_location='ardales',
         ...     phone='+34623736566',
         ...     notes='Ring the doorbell twice'
         ... )
@@ -78,6 +83,11 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     )
 
+    LOCATION_CHOICES = (
+        ('ardales', 'Ardales'),
+        ('carratraca', 'Carratraca'),
+    )
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -99,13 +109,12 @@ class Order(models.Model):
     )
 
     # Delivery information
-    delivery_address = models.CharField('Delivery Address', max_length=250)
-    delivery_location = models.CharField('Delivery Location', max_length=250)
-    delivery_province = models.CharField(
-        'Delivery Province',
-        max_length=100,
-        blank=True,
-        null=True
+    delivery_street = models.CharField('Delivery Street', max_length=200)
+    delivery_house_number = models.CharField('House Number', max_length=20)
+    delivery_location = models.CharField(
+        'Delivery Location',
+        max_length=20,
+        choices=LOCATION_CHOICES
     )
     phone = models.CharField('Phone', max_length=20)
     notes = models.TextField(

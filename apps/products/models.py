@@ -28,6 +28,7 @@ class Product(TranslatableModel):
         image (ImageField): Optional product image uploaded to 'Products/' directory.
         categories (ManyToManyField): Related categories for this product.
         ingredients (ManyToManyField): Ingredients used in this product.
+        be_extra (bool): Whether this product can be added as an extra to other products.
         created_at (datetime): Timestamp when product was created.
         updated_at (datetime): Timestamp of last update.
 
@@ -68,6 +69,11 @@ class Product(TranslatableModel):
     image = models.ImageField(upload_to='Products/', blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='products', blank=True)
     ingredients = models.ManyToManyField(Ingredient, related_name='products', blank=True)
+    be_extra = models.BooleanField(
+        'Can be Extra',
+        default=False,
+        help_text='Indicates if this product can be added as an extra to other products'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

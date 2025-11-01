@@ -143,7 +143,8 @@ class OrderListSerializer(serializers.ModelSerializer):
             'status',
             'total_price',
             'items_count',
-            'delivery_address',
+            'delivery_street',
+            'delivery_house_number',
             'delivery_location',
             'phone',
             'created_at'
@@ -192,9 +193,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'user_email': 'john@example.com',
             'status': 'pending',
             'total_price': '45.50',
-            'delivery_address': 'Calle 123',
-            'delivery_location': 'Madrid',
-            'delivery_province': 'Madrid',
+            'delivery_street': 'Calle Principal',
+            'delivery_house_number': '123',
+            'delivery_location': 'ardales',
             'phone': '+34623736566',
             'notes': 'Ring doorbell twice',
             'items': [
@@ -231,9 +232,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'user_email',
             'status',
             'total_price',
-            'delivery_address',
+            'delivery_street',
+            'delivery_house_number',
             'delivery_location',
-            'delivery_province',
             'phone',
             'notes',
             'items',
@@ -260,9 +261,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     Example:
         >>> # Create new order
         >>> data = {
-        ...     'delivery_address': 'Calle 123',
-        ...     'delivery_location': 'Madrid',
-        ...     'delivery_province': 'Madrid',
+        ...     'delivery_street': 'Calle Principal',
+        ...     'delivery_house_number': '123',
+        ...     'delivery_location': 'ardales',
         ...     'phone': '+34623736566',
         ...     'notes': 'Ring doorbell',
         ...     'items': [
@@ -291,9 +292,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'delivery_address',
+            'delivery_street',
+            'delivery_house_number',
             'delivery_location',
-            'delivery_province',
             'phone',
             'notes',
             'items'

@@ -24,7 +24,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('user', 'status', 'total_price')
         }),
         ('Delivery Information', {
-            'fields': ('delivery_address', 'delivery_location', 'delivery_province', 'phone', 'notes')
+            'fields': ('delivery_street', 'delivery_house_number', 'delivery_location', 'phone', 'notes')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at')
