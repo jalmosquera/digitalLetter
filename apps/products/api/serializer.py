@@ -5,6 +5,7 @@ translations, ManyToMany relationships with categories and ingredients, and
 CRUD operations through Django REST Framework.
 """
 
+import json
 from typing import Any, Dict, List, Optional
 from rest_framework import serializers
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
@@ -23,6 +24,18 @@ class ProductSerializerPost(TranslatableModelSerializer):
     (categories, ingredients). Provides custom create and update methods to
     properly handle all field types and relationships.
 
+    This serializer supports TWO input formats:
+
+    1. JSON format (nested) - Use when NOT sending files:
+       - Content-Type: application/json
+       - Translations as nested objects
+       - Categories/ingredients as arrays
+
+    2. form-data format (flat) - Use when sending image files:
+       - Content-Type: multipart/form-data
+       - Translations as flat fields (name_en, name_es, etc.)
+       - Categories/ingredients as comma-separated strings or JSON strings
+
     Attributes:
         translations (TranslatedFieldsField): Exposes translatable fields
             (name, description) for the Product model.
@@ -36,7 +49,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
         fields: All model fields are included in serialization.
         read_only_fields: Timestamp fields that cannot be modified via API.
 
-    Example:
+    Example (JSON format):
         >>> # Create product with translations and relationships
         >>> data = {
         ...     'translations': {
@@ -58,20 +71,19 @@ class ProductSerializerPost(TranslatableModelSerializer):
         >>> serializer = ProductSerializerPost(data=data)
         >>> if serializer.is_valid():
         ...     product = serializer.save()
-        >>>
-        >>> # Update product (partial update)
-        >>> data = {
-        ...     'price': '13.99',
-        ...     'stock': 45,
-        ...     'ingredients': [3, 4, 5, 6]  # Add new ingredient
-        ... }
-        >>> serializer = ProductSerializerPost(
-        ...     instance=product,
-        ...     data=data,
-        ...     partial=True
-        ... )
-        >>> if serializer.is_valid():
-        ...     product = serializer.save()
+
+    Example (form-data format with image):
+        >>> # Frontend: Use FormData when sending image
+        >>> # const formData = new FormData();
+        >>> # formData.append('name_en', 'Margherita Pizza');
+        >>> # formData.append('name_es', 'Pizza Margarita');
+        >>> # formData.append('description_en', 'Classic Italian pizza');
+        >>> # formData.append('description_es', 'Pizza italiana clásica');
+        >>> # formData.append('categories', '1,2');  // or JSON: '[1,2]'
+        >>> # formData.append('ingredients', '3,4,5');  // or JSON: '[3,4,5]'
+        >>> # formData.append('price', '12.99');
+        >>> # formData.append('stock', '50');
+        >>> # formData.append('image', imageFile);
 
     Note:
         - Handles translation data separately from regular fields
@@ -79,6 +91,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
         - Categories are required, ingredients are optional
         - Supports partial updates for PATCH requests
         - Timestamps are auto-managed and cannot be set via API
+        - Automatically detects and transforms flat form-data to nested structure
     """
 
     translations = TranslatedFieldsField(shared_model=Product)
@@ -91,6 +104,126 @@ class ProductSerializerPost(TranslatableModelSerializer):
         queryset=Ingredient.objects.all(),
         required=False
     )
+
+    def to_internal_value(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform flat form-data fields to nested format expected by serializer.
+
+        This method allows the serializer to accept two input formats:
+
+        1. JSON format (nested structure):
+           {
+               "translations": {
+                   "en": {"name": "...", "description": "..."},
+                   "es": {"name": "...", "description": "..."}
+               },
+               "categories": [1, 2],
+               "ingredients": [3, 4]
+           }
+
+        2. form-data format (flat fields):
+           {
+               "name_en": "...",
+               "name_es": "...",
+               "description_en": "...",
+               "description_es": "...",
+               "categories": "1,2" or "[1,2]",
+               "ingredients": "3,4,5" or "[3,4,5]"
+           }
+
+        Args:
+            data: Raw input data from request, can be nested JSON or flat form-data.
+
+        Returns:
+            Dictionary with normalized nested structure expected by parent serializer.
+
+        Raises:
+            serializers.ValidationError: If categories/ingredients format is invalid.
+        """
+        # Convert QueryDict to regular dict to avoid list wrapping issues
+        if hasattr(data, 'lists'):
+            # It's a QueryDict, convert to dict extracting first value from lists
+            new_data = {}
+            for key, value_list in data.lists():
+                if len(value_list) == 1:
+                    new_data[key] = value_list[0]
+                else:
+                    new_data[key] = value_list
+            data = new_data
+        else:
+            # Regular dict, just copy
+            data = data.copy() if hasattr(data, 'copy') else dict(data)
+
+        # Helper function to extract value from lists (if still needed)
+        def get_value(value):
+            """Extract actual value from list format."""
+            if isinstance(value, list) and len(value) > 0:
+                return value[0]
+            return value
+
+        # Handle flat translation fields (name_en, name_es, etc.)
+        # Check if flat fields exist instead of nested translations
+        supported_languages = ['en', 'es']
+        translation_fields = ['name', 'description']
+
+        has_flat_translations = any(
+            f"{field}_{lang}" in data
+            for field in translation_fields
+            for lang in supported_languages
+        )
+
+        if has_flat_translations and 'translations' not in data:
+            # Convert flat fields to nested structure
+            translations = {}
+            for lang in supported_languages:
+                lang_data = {}
+                for field in translation_fields:
+                    field_key = f"{field}_{lang}"
+                    if field_key in data:
+                        # Extract value and handle QueryDict list format
+                        value = get_value(data.pop(field_key))
+                        lang_data[field] = value
+
+                if lang_data:  # Only add if we have data for this language
+                    translations[lang] = lang_data
+
+            if translations:
+                data['translations'] = translations
+
+        # Handle categories field - convert string or JSON string to list
+        if 'categories' in data:
+            categories_value = get_value(data['categories'])
+            if isinstance(categories_value, str):
+                try:
+                    # Try parsing as JSON array first
+                    categories = json.loads(categories_value)
+                    if not isinstance(categories, list):
+                        categories = [categories]
+                except (json.JSONDecodeError, ValueError):
+                    # If not JSON, try comma-separated values
+                    categories = [int(cat.strip()) for cat in categories_value.split(',') if cat.strip()]
+                data['categories'] = categories
+            elif not isinstance(categories_value, list):
+                # Single value, convert to list
+                data['categories'] = [categories_value]
+
+        # Handle ingredients field - convert string or JSON string to list
+        if 'ingredients' in data:
+            ingredients_value = get_value(data['ingredients'])
+            if isinstance(ingredients_value, str):
+                try:
+                    # Try parsing as JSON array first
+                    ingredients = json.loads(ingredients_value)
+                    if not isinstance(ingredients, list):
+                        ingredients = [ingredients]
+                except (json.JSONDecodeError, ValueError):
+                    # If not JSON, try comma-separated values
+                    ingredients = [int(ing.strip()) for ing in ingredients_value.split(',') if ing.strip()]
+                data['ingredients'] = ingredients
+            elif not isinstance(ingredients_value, list):
+                # Single value, convert to list
+                data['ingredients'] = [ingredients_value]
+
+        return super().to_internal_value(data)
 
     class Meta:
         """Meta options for ProductSerializerPost."""

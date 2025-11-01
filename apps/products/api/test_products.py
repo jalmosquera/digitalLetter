@@ -1,9 +1,15 @@
 import pytest
+from io import BytesIO
+from PIL import Image
 from rest_framework.test import APIClient
 from django.urls import reverse
-from django.contrib.auth.models import User
-from apps.products.models import Products
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from apps.products.models import Product
 from apps.categories.models import Category
+from apps.ingredients.models import Ingredient
+
+User = get_user_model()
 
 
 @pytest.fixture
@@ -13,7 +19,12 @@ def api_client():
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(username="tester", password="pass12345")
+    return User.objects.create_user(
+        username="tester",
+        email="tester@test.com",
+        name="Tester User",
+        password="pass12345"
+    )
 
 
 @pytest.fixture
@@ -62,12 +73,12 @@ def test_create_product_with_translations_and_categories(auth_client):
 @pytest.mark.django_db
 def test_list_products_only_available(api_client):
     # Producto disponible
-    plate1 = Products.objects.create(price=5, stock=10, available=True)
+    plate1 = Product.objects.create(price=5, stock=10, available=True)
     plate1.set_current_language('es')
     plate1.name = "Disponible ES"
     plate1.save()
     # Producto no disponible
-    plate2 = Products.objects.create(price=5, stock=10, available=False)
+    plate2 = Product.objects.create(price=5, stock=10, available=False)
     plate2.set_current_language('es')
     plate2.name = "No disponible ES"
     plate2.save()
@@ -76,14 +87,16 @@ def test_list_products_only_available(api_client):
     response = api_client.get(url)
     assert response.status_code == 200
     data = response.json()
-    names = [item['translations']['es']['name'] for item in data]
+    # Handle paginated response
+    results = data.get('results', data) if isinstance(data, dict) else data
+    names = [item['translations']['es']['name'] for item in results]
     assert "Disponible ES" in names
     assert "No disponible ES" not in names
 
 
 @pytest.mark.django_db
 def test_retrieve_product(api_client):
-    plate = Products.objects.create(price=20, stock=5, available=True)
+    plate = Product.objects.create(price=20, stock=5, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -98,7 +111,7 @@ def test_retrieve_product(api_client):
 
 @pytest.mark.django_db
 def test_update_product(auth_client):
-    plate = Products.objects.create(price=30, stock=20, available=True)
+    plate = Product.objects.create(price=30, stock=20, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -136,7 +149,7 @@ def test_update_product(auth_client):
 
 @pytest.mark.django_db
 def test_partial_update_product(auth_client):
-    plate = Products.objects.create(price=15, stock=30, available=True)
+    plate = Product.objects.create(price=15, stock=30, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.description = "Desc ES"
@@ -158,7 +171,7 @@ def test_partial_update_product(auth_client):
 
 @pytest.mark.django_db
 def test_delete_product(auth_client):
-    plate = Products.objects.create(price=10, stock=10, available=True)
+    plate = Product.objects.create(price=10, stock=10, available=True)
     plate.set_current_language('es')
     plate.name = "Plato ES"
     plate.save()
@@ -166,7 +179,75 @@ def test_delete_product(auth_client):
     url = reverse('products-detail', args=[plate.pk])
     response = auth_client.delete(url)
     assert response.status_code == 204
-    assert Products.objects.filter(pk=plate.pk).count() == 0
+    assert Product.objects.filter(pk=plate.pk).count() == 0
+
+
+@pytest.mark.django_db
+def test_create_product_with_formdata_flat_fields(auth_client):
+    """Test creating product using form-data format with flat translation fields."""
+    # Create category
+    cat1 = Category.objects.create()
+    cat1.set_current_language('es')
+    cat1.name = "Categoría ES"
+    cat1.save()
+
+    # Create ingredients
+    ing1 = Ingredient.objects.create()
+    ing1.set_current_language('es')
+    ing1.name = "Ingrediente 1"
+    ing1.save()
+
+    ing2 = Ingredient.objects.create()
+    ing2.set_current_language('es')
+    ing2.name = "Ingrediente 2"
+    ing2.save()
+
+    # Create a simple test image
+    image = Image.new('RGB', (100, 100), color='red')
+    image_io = BytesIO()
+    image.save(image_io, format='JPEG')
+    image_io.seek(0)
+    image_file = SimpleUploadedFile(
+        "test_image.jpg",
+        image_io.getvalue(),
+        content_type="image/jpeg"
+    )
+
+    url = reverse('products-list')
+
+    # Use flat fields format (form-data style)
+    payload = {
+        "name_en": "Product EN",
+        "name_es": "Producto ES",
+        "description_en": "Description EN",
+        "description_es": "Descripción ES",
+        "price": "15.50",
+        "stock": 100,
+        "available": True,
+        "be_extra": False,
+        "categories": f"{cat1.pk}",  # Comma-separated string
+        "ingredients": f"{ing1.pk},{ing2.pk}",  # Comma-separated string
+        "image": image_file
+    }
+
+    response = auth_client.post(url, payload, format='multipart')
+
+    assert response.status_code == 201
+    data = response.json()
+
+    # Verify translations were created correctly
+    assert 'translations' in data
+    assert data['translations']['es']['name'] == "Producto ES"
+    assert data['translations']['en']['name'] == "Product EN"
+    assert data['translations']['es']['description'] == "Descripción ES"
+    assert data['translations']['en']['description'] == "Description EN"
+
+    # Verify relationships
+    assert cat1.pk in data['categories']
+
+    # Verify image was uploaded
+    assert data['image'] is not None
+    assert 'test_image' in data['image']
 
 
 #TODO revisar test en todos los modelos de la app
