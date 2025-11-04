@@ -250,10 +250,51 @@ class RegisterClients(viewsets.ModelViewSet):
             404: Response({"description": "User not found"}),
         },
     ),
+    update=extend_schema(
+        tags=["users"],
+        description="Update a specific user by ID (Staff only)",
+        request=UserListSerializer,
+        responses={
+            200: UserListSerializer,
+            400: Response({"description": "Invalid data provided"}),
+            403: Response({"description": "Permission denied"}),
+            404: Response({"description": "User not found"}),
+        },
+    ),
+    partial_update=extend_schema(
+        tags=["users"],
+        description="Partially update a specific user by ID (Staff only)",
+        request=UserListSerializer,
+        responses={
+            200: UserListSerializer,
+            400: Response({"description": "Invalid data provided"}),
+            403: Response({"description": "Permission denied"}),
+            404: Response({"description": "User not found"}),
+        },
+    ),
+    destroy=extend_schema(
+        tags=["users"],
+        description="Delete a specific user by ID (Staff only)",
+        responses={
+            204: Response({"description": "User deleted successfully"}),
+            403: Response({"description": "Permission denied"}),
+            404: Response({"description": "User not found"}),
+        },
+    ),
 )
-class UsersListViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsStaffOrEmploye]
+class UsersListViewSet(viewsets.ModelViewSet):
     serializer_class = UserListSerializer
+
+    def get_permissions(self) -> list[BasePermission]:
+        """Return appropriate permissions based on the action.
+
+        Returns:
+            List of permission instances. IsStaff for write operations,
+            IsStaffOrEmploye for read operations.
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsStaff()]
+        return [IsStaffOrEmploye()]
 
     def get_queryset(self) -> QuerySet[User]:
         """Return filtered queryset based on the requesting user's role.
@@ -289,6 +330,56 @@ class UsersListViewSet(viewsets.ReadOnlyModelViewSet):
         if not (request.user.is_staff or request.user.role == "employe"):
             return Response({"detail": "Not authorized."}, status=403)
         return super().list(request, *args, **kwargs)
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Update a user with password hashing if password is provided.
+
+        Args:
+            request: The HTTP request containing user update data.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response with updated user data (200) or validation errors (400).
+
+        Notes:
+            If password is provided in the request, it will be hashed before saving.
+            Only staff members can update users.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        if serializer.is_valid():
+            password = request.data.get("password")
+            user = serializer.save()
+
+            # Hash password if provided
+            if password:
+                user.set_password(password)
+                user.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Partially update a user with password hashing if password is provided.
+
+        Args:
+            request: The HTTP request containing partial user update data.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response with updated user data (200) or validation errors (400).
+
+        Notes:
+            Supports partial updates. Only provided fields will be updated.
+            If password is provided, it will be hashed before saving.
+            Only staff members can update users.
+        """
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 @extend_schema(
