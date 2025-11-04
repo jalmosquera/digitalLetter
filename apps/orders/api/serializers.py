@@ -180,12 +180,21 @@ class OrderListSerializer(serializers.ModelSerializer):
             >>> serializer.get_items(order)
             [{'product': 1, 'product_name': 'Pizza', 'product_image': 'url', ...}]
         """
+        request = self.context.get('request')
         items_data = []
         for item in obj.items.all():
+            # Build absolute URL for product image
+            product_image = None
+            if item.product.image:
+                if request:
+                    product_image = request.build_absolute_uri(item.product.image.url)
+                else:
+                    product_image = item.product.image.url
+
             items_data.append({
                 'product': item.product.id,
                 'product_name': str(item.product),
-                'product_image': item.product.image.url if item.product.image else None,
+                'product_image': product_image,
                 'quantity': item.quantity,
                 'unit_price': str(item.unit_price),
                 'subtotal': str(item.subtotal),
