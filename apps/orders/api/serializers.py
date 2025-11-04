@@ -92,17 +92,17 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     """Serializer for listing orders (GET list).
 
-    Provides a simplified view of orders for list endpoints, including
-    basic order information and user details without nested items.
+    Provides order information including nested order items for analytics.
 
     Attributes:
         user_name (str): Read-only name of the user who placed the order.
         user_email (str): Read-only email of the user.
         items_count (int): Read-only count of items in the order.
+        items (list): Nested list of order items with product details.
 
     Meta:
         model: Order model this serializer is based on.
-        fields: Basic order information for list view.
+        fields: Order information with nested items.
 
     Example:
         >>> # List all orders
@@ -118,20 +118,21 @@ class OrderListSerializer(serializers.ModelSerializer):
                 'status': 'pending',
                 'total_price': '45.50',
                 'items_count': 3,
+                'items': [...],
                 'created_at': '2024-10-30T12:00:00Z'
             },
             ...
         ]
 
     Note:
-        - Optimized for list views without nested data
-        - Items are not included, use detail endpoint for full order
+        - Includes items for analytics purposes
         - Timestamps are ISO 8601 formatted
     """
 
     user_name = serializers.CharField(source='user.name', read_only=True)
     user_email = serializers.EmailField(source='user.email', read_only=True)
     items_count = serializers.SerializerMethodField()
+    items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -143,6 +144,7 @@ class OrderListSerializer(serializers.ModelSerializer):
             'status',
             'total_price',
             'items_count',
+            'items',
             'delivery_street',
             'delivery_house_number',
             'delivery_location',
@@ -164,6 +166,31 @@ class OrderListSerializer(serializers.ModelSerializer):
             3
         """
         return obj.items.count()
+
+    def get_items(self, obj: Order) -> List[Dict]:
+        """Get order items with product details.
+
+        Args:
+            obj: Order instance.
+
+        Returns:
+            list: Order items with product info including image.
+
+        Example:
+            >>> serializer.get_items(order)
+            [{'product': 1, 'product_name': 'Pizza', 'product_image': 'url', ...}]
+        """
+        items_data = []
+        for item in obj.items.all():
+            items_data.append({
+                'product': item.product.id,
+                'product_name': str(item.product),
+                'product_image': item.product.image.url if item.product.image else None,
+                'quantity': item.quantity,
+                'unit_price': str(item.unit_price),
+                'subtotal': str(item.subtotal),
+            })
+        return items_data
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
