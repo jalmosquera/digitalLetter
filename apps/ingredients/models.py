@@ -4,7 +4,9 @@ This module defines the Ingredient model with multi-language support for
 managing and displaying product ingredients in the digital menu.
 """
 
+from decimal import Decimal
 from django.db import models
+from django.core.validators import MinValueValidator
 from parler.models import TranslatableModel, TranslatedFields
 
 
@@ -51,6 +53,14 @@ class Ingredient(TranslatableModel):
         'Can be Extra',
         default=False,
         help_text='Indicates if this ingredient can be added as an extra to products'
+    )
+    price = models.DecimalField(
+        'Price',
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text='Extra charge when added as extra ingredient (in euros)'
     )
 
     class Meta:

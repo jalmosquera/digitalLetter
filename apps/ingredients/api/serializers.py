@@ -80,7 +80,7 @@ class IngredientSerializer(TranslatableModelSerializer):
         """Meta options for IngredientSerializer."""
 
         model = Ingredient
-        fields = ['id', 'translations', 'icon']
+        fields = ['id', 'translations', 'icon', 'be_extra', 'price']
 
     def create(self, validated_data: Dict[str, Any]) -> Ingredient:
         """Create a new Ingredient instance with translations.
