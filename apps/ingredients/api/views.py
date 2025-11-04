@@ -83,3 +83,15 @@ from apps.ingredients.api.serializers import IngredientSerializer
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+
+    def get_queryset(self):
+        """Filter ingredients by be_extra query parameter if provided."""
+        queryset = super().get_queryset()
+        be_extra = self.request.query_params.get('be_extra', None)
+
+        if be_extra is not None:
+            # Convert string to boolean
+            be_extra_bool = be_extra.lower() in ('true', '1', 'yes')
+            queryset = queryset.filter(be_extra=be_extra_bool)
+
+        return queryset
