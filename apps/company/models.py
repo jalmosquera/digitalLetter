@@ -59,6 +59,8 @@ class Company(TranslatableModel):
     image = models.ImageField('Image', upload_to='logos/', null=True, blank=True)
     email = models.EmailField('Email', max_length=100)
     phone = models.IntegerField('Phone')
+    whatsapp_phone = models.CharField('WhatsApp Phone', max_length=20, default='+34623736566')
+    business_hours = models.TextField('Business Hours', blank=True, default='Lun-Dom: 08:00 - 23:00')
 
     class Meta:
         """Meta options for Company model."""
