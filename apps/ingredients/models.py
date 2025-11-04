@@ -19,6 +19,9 @@ class Ingredient(TranslatableModel):
         translations (TranslatedFields): Translatable fields (name).
         icon (str): Optional icon identifier or class name (max 50 chars).
                    Can be used for Font Awesome, Material Icons, or custom icon sets.
+        be_extra (bool): Indicates if this ingredient can be added as an extra by customers.
+                        When True, customers can add this ingredient as an extra charge.
+                        Default is False.
 
     Translatable Fields:
         name (str): Ingredient name in multiple languages (max 50 chars).
@@ -44,6 +47,11 @@ class Ingredient(TranslatableModel):
         name=models.CharField('Name', max_length=50)
     )
     icon = models.CharField('Icon', max_length=50, null=True, blank=True)
+    be_extra = models.BooleanField(
+        'Can be Extra',
+        default=False,
+        help_text='Indicates if this ingredient can be added as an extra to products'
+    )
 
     class Meta:
         db_table = 'ingredients_ingredients'  # Keep old table name for backward compatibility
