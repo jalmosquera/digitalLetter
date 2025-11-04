@@ -223,6 +223,32 @@ class ProductSerializerPost(TranslatableModelSerializer):
                 # Single value, convert to list
                 data['ingredients'] = [ingredients_value]
 
+        # Handle boolean field - convert string to boolean
+        if 'available' in data:
+            available_value = get_value(data['available'])
+            if isinstance(available_value, str):
+                # FormData sends boolean as string
+                data['available'] = available_value.lower() in ('true', '1', 'yes')
+            elif isinstance(available_value, bool):
+                data['available'] = available_value
+
+        # Handle numeric fields - ensure they're proper types
+        if 'price' in data:
+            price_value = get_value(data['price'])
+            if isinstance(price_value, str):
+                try:
+                    data['price'] = float(price_value)
+                except (ValueError, TypeError):
+                    pass  # Let serializer validation handle it
+
+        if 'stock' in data:
+            stock_value = get_value(data['stock'])
+            if isinstance(stock_value, str):
+                try:
+                    data['stock'] = int(stock_value)
+                except (ValueError, TypeError):
+                    pass  # Let serializer validation handle it
+
         return super().to_internal_value(data)
 
     class Meta:
