@@ -63,3 +63,18 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Language code from environment
 LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE', 'es')
+
+
+
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "https://digital-letter-front.vercel.app",
+    "http://localhost:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://digital-letter-front.vercel.app",
+    "https://*.railway.app",
+]
+
