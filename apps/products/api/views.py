@@ -78,15 +78,10 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Filter products available only for the ‘list’ action.
-        For other actions (retrieve, update, etc.), return all products.
+        Return all products. Filtering by availability can be done via query params.
+        Use ?available=true or ?available=false to filter by availability.
         """
-        queryset = Product.objects.all()
-        
-        if self.action == 'list':
-            queryset = queryset.filter(available=True)
-        
-        return queryset
+        return Product.objects.all()
 
     def get_serializer_class(self) -> type[Serializer]:
         """Return the appropriate serializer class based on the action."""
