@@ -101,6 +101,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://digital-letter-front.vercel.app",
+    "https://digitalletter-production-d688.up.railway.app",  # 👈 añade esto
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://digital-letter-front.vercel.app",
+    "https://digitalletter-production-d688.up.railway.app",  # 👈 añade esto también
+    "https://*.railway.app",
+]
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
@@ -207,6 +218,7 @@ PARLER_LANGUAGES = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://digital-letter-front.vercel.app",
+    "https://digitalletter-production-d688.up.railway.app",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -225,6 +237,7 @@ CORS_ALLOW_HEADERS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://digital-letter-front.vercel.app",
+    "https://digitalletter-production-d688.up.railway.app",
     "https://*.railway.app",
 ]
 
