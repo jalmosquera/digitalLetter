@@ -9,6 +9,13 @@ import dj_database_url
 import os
 import sys
 
+
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+
+if "corsheaders" not in INSTALLED_APPS:
+    INSTALLED_APPS += ["corsheaders"]
+
+
 # Override DEBUG for production
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
