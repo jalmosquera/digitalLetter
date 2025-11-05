@@ -204,8 +204,27 @@ PARLER_LANGUAGES = {
     }
 }
 
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://digital-letter-front.vercel.app",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://digital-letter-front.vercel.app",
+    "https://*.railway.app",
+]
+
