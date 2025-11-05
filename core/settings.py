@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',  # Must be before django.contrib.staticfiles
+    'cloudinary',
     'rest_framework',
     'apps.products',
     'apps.categories',
@@ -101,17 +103,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://digital-letter-front.vercel.app",
-    "https://digitalletter-production-d688.up.railway.app",  # 👈 añade esto
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://digital-letter-front.vercel.app",
-    "https://digitalletter-production-d688.up.railway.app",  # 👈 añade esto también
-    "https://*.railway.app",
-]
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
@@ -142,12 +133,34 @@ USE_TZ = True
 ########################### DEV ##################################
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ==========================================
+# Cloudinary Configuration
+# ==========================================
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    'CHUNK_SIZE': 20000000,  # 20MB chunks
+    'MAX_LENGTH': 40000000,  # 40MB max file size
+}
+
+# Use Cloudinary for media files storage (Django 4.2+ format)
+STORAGES = {
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
 # Default primary key field type
