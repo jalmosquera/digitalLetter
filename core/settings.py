@@ -144,6 +144,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # ==========================================
 # Cloudinary Configuration
 # ==========================================
+import cloudinary
+
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
@@ -151,6 +153,14 @@ CLOUDINARY_STORAGE = {
     'CHUNK_SIZE': 20000000,  # 20MB chunks
     'MAX_LENGTH': 40000000,  # 40MB max file size
 }
+
+# Configure cloudinary
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
+    secure=True
+)
 
 # Use Cloudinary for media files storage (Django 4.2+ format)
 STORAGES = {
