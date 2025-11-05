@@ -15,6 +15,7 @@ Typical usage example:
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.filters import SearchFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from apps.ingredients.models import Ingredient
@@ -85,6 +86,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [SearchFilter]
+    search_fields = ['translations__name']
 
     def get_queryset(self):
         """Filter ingredients by be_extra query parameter if provided."""

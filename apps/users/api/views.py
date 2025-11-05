@@ -38,6 +38,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.request import Request
+from rest_framework.filters import SearchFilter
 from django.db.models import Q, QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -284,6 +285,8 @@ class RegisterClients(viewsets.ModelViewSet):
 )
 class UsersListViewSet(viewsets.ModelViewSet):
     serializer_class = UserListSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['username', 'email', 'name']
 
     def get_permissions(self) -> list[BasePermission]:
         """Return appropriate permissions based on the action.

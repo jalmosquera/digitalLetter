@@ -19,6 +19,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
+from rest_framework.filters import SearchFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from apps.categories.models import Category
@@ -91,6 +92,8 @@ from apps.categories.api.serializers import (
 class CategoriesView(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     permission_classes = [AllowAny]
+    filter_backends = [SearchFilter]
+    search_fields = ['translations__name', 'translations__description']
 
     def get_serializer_class(self) -> type[Serializer]:
         """Return the appropriate serializer class based on the action.

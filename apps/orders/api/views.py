@@ -18,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.serializers import Serializer
+from rest_framework.filters import SearchFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from apps.orders.models import Order
@@ -104,6 +105,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'head', 'options']  # No DELETE
+    filter_backends = [SearchFilter]
+    search_fields = ['user__username', 'user__email', 'id', 'delivery_location']
 
     def get_queryset(self):
         """Get queryset filtered by user permissions.
