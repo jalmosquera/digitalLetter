@@ -36,7 +36,6 @@ class CategorySerializerGet(TranslatableModelSerializer):
                 'en': {'name': 'Main Courses', 'description': '...'},
                 'es': {'name': 'Platos Principales', 'description': '...'}
             },
-            'image': '/media/categories/image.jpg',
             'created_at': '2024-01-15T10:30:00Z',
             'updated_at': '2024-01-15T10:30:00Z'
         }
@@ -75,8 +74,7 @@ class CategorySerializerPost(serializers.ModelSerializer):
         ...     'translations': {
         ...         'en': {'name': 'Desserts', 'description': 'Sweet treats'},
         ...         'es': {'name': 'Postres', 'description': 'Dulces delicias'}
-        ...     },
-        ...     'image': image_file
+        ...     }
         ... }
         >>> serializer = CategorySerializerPost(data=data)
         >>> if serializer.is_valid():

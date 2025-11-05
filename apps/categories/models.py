@@ -16,7 +16,6 @@ class Category(TranslatableModel):
 
     Attributes:
         translations (TranslatedFields): Translatable fields (name, description).
-        image (ImageField): Optional category image uploaded to 'categories/' directory.
         created_at (datetime): Timestamp when category was created.
         updated_at (datetime): Timestamp of last update.
 
@@ -37,14 +36,12 @@ class Category(TranslatableModel):
     Note:
         - Uses django-parler for multi-language support
         - Can be associated with multiple products via ManyToMany relationship
-        - Image uploads are stored in 'categories/' media directory
     """
 
     translations = TranslatedFields(
         name=models.CharField('Name', max_length=100),
         description=models.TextField('Description', blank=True, null=True)
     )
-    image = models.ImageField(upload_to="categories/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
