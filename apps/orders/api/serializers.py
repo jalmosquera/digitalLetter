@@ -66,7 +66,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'product_price',
             'quantity',
             'unit_price',
-            'subtotal'
+            'subtotal',
+            'customization'
         ]
         read_only_fields = ('subtotal',)
 
@@ -198,6 +199,7 @@ class OrderListSerializer(serializers.ModelSerializer):
                 'quantity': item.quantity,
                 'unit_price': str(item.unit_price),
                 'subtotal': str(item.subtotal),
+                'customization': item.customization,
             })
         return items_data
 
@@ -342,7 +344,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         Ensures each item has required fields and references valid products.
 
         Args:
-            value: List of item dictionaries with 'product' and 'quantity'.
+            value: List of item dictionaries with 'product', 'quantity', and optional 'customization'.
 
         Returns:
             List: Validated items data.
@@ -351,9 +353,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             ValidationError: If items are invalid or products don't exist.
 
         Example:
-            >>> items = [{'product': 5, 'quantity': 2}]
+            >>> items = [{'product': 5, 'quantity': 2, 'customization': {...}}]
             >>> serializer.validate_items(items)
-            [{'product': 5, 'quantity': 2}]
+            [{'product': 5, 'quantity': 2, 'customization': {...}}]
         """
         if not value:
             raise serializers.ValidationError("Order must have at least one item.")
@@ -409,7 +411,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 order=order,
                 product=product,
                 quantity=item_data['quantity'],
-                unit_price=product.price
+                unit_price=product.price,
+                customization=item_data.get('customization', None)
             )
 
         # Calculate and save total price

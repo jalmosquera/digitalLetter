@@ -229,6 +229,12 @@ class OrderItem(models.Model):
         default=Decimal('0.00'),
         validators=[MinValueValidator(Decimal('0.00'))]
     )
+    customization = models.JSONField(
+        'Customization',
+        blank=True,
+        null=True,
+        help_text='Product customization: selected ingredients, extras, and notes'
+    )
 
     class Meta:
         db_table = 'order_items'
