@@ -16,6 +16,7 @@ Typical usage example:
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from apps.ingredients.models import Ingredient
@@ -100,5 +101,22 @@ class IngredientViewSet(viewsets.ModelViewSet):
             be_extra_bool = be_extra.lower() in ('true', '1', 'yes')
             queryset = queryset.filter(be_extra=be_extra_bool)
 
-        # Order by translated name alphabetically
-        return queryset.order_by('translations__name')
+        # Remove duplicates caused by translations join, then order by ID
+        # Note: Ordering by translated fields causes duplicates with parler
+        return queryset.distinct()
+
+    def list(self, request, *args, **kwargs):
+        """Override list to sort results by translated name after fetching."""
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Sort by translated name in Python (after distinct)
+        from django.utils.translation import get_language
+        current_lang = get_language() or 'es'
+
+        sorted_data = sorted(
+            serializer.data,
+            key=lambda x: x.get('translations', {}).get(current_lang, {}).get('name', '').lower()
+        )
+
+        return Response(sorted_data)
