@@ -191,7 +191,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
 
         # Handle categories field - convert string or JSON string to list
         if 'categories' in data:
-            categories_value = get_value(data['categories'])
+            categories_value = data['categories']  # Don't use get_value() here - we need all values
             if isinstance(categories_value, str):
                 try:
                     # Try parsing as JSON array first
@@ -202,13 +202,16 @@ class ProductSerializerPost(TranslatableModelSerializer):
                     # If not JSON, try comma-separated values
                     categories = [int(cat.strip()) for cat in categories_value.split(',') if cat.strip()]
                 data['categories'] = categories
+            elif isinstance(categories_value, list):
+                # Already a list, convert each value to int
+                data['categories'] = [int(cat) if not isinstance(cat, int) else cat for cat in categories_value]
             elif not isinstance(categories_value, list):
                 # Single value, convert to list
-                data['categories'] = [categories_value]
+                data['categories'] = [int(categories_value)]
 
         # Handle ingredients field - convert string or JSON string to list
         if 'ingredients' in data:
-            ingredients_value = get_value(data['ingredients'])
+            ingredients_value = data['ingredients']  # Don't use get_value() here - we need all values
             if isinstance(ingredients_value, str):
                 try:
                     # Try parsing as JSON array first
@@ -219,9 +222,12 @@ class ProductSerializerPost(TranslatableModelSerializer):
                     # If not JSON, try comma-separated values
                     ingredients = [int(ing.strip()) for ing in ingredients_value.split(',') if ing.strip()]
                 data['ingredients'] = ingredients
+            elif isinstance(ingredients_value, list):
+                # Already a list, convert each value to int
+                data['ingredients'] = [int(ing) if not isinstance(ing, int) else ing for ing in ingredients_value]
             elif not isinstance(ingredients_value, list):
                 # Single value, convert to list
-                data['ingredients'] = [ingredients_value]
+                data['ingredients'] = [int(ingredients_value)]
 
         # Handle boolean field - convert string to boolean
         if 'available' in data:
