@@ -88,6 +88,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [SearchFilter]
     search_fields = ['translations__name']
+    pagination_class = None  # Disable pagination for ingredients
 
     def get_queryset(self):
         """Filter ingredients by be_extra query parameter if provided."""
@@ -99,4 +100,5 @@ class IngredientViewSet(viewsets.ModelViewSet):
             be_extra_bool = be_extra.lower() in ('true', '1', 'yes')
             queryset = queryset.filter(be_extra=be_extra_bool)
 
-        return queryset
+        # Order by translated name alphabetically
+        return queryset.order_by('translations__name')
