@@ -41,7 +41,7 @@ The system supports:
 - **JWT Authentication**: Secure token-based authentication
 - **API Documentation**: Auto-generated Swagger UI and ReDoc documentation
 - **Image Management**: Support for product and company images
-- **Ingredient Tracking**: Manage and track product ingredients
+- **Ingredient Tracking**: Manage and track product ingredients with alphabetical sorting (no pagination)
 - **Filtering & Search**: Advanced filtering capabilities with django-filter
 
 ## 🛠️ Tech Stack

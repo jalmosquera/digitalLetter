@@ -41,7 +41,7 @@ El sistema soporta:
 - **Autenticación JWT**: Autenticación segura basada en tokens
 - **Documentación de API**: Documentación auto-generada con Swagger UI y ReDoc
 - **Gestión de Imágenes**: Soporte para imágenes de productos y empresa
-- **Seguimiento de Ingredientes**: Gestiona y rastrea ingredientes de productos
+- **Seguimiento de Ingredientes**: Gestiona y rastrea ingredientes de productos con ordenamiento alfabético (sin paginación)
 - **Filtrado y Búsqueda**: Capacidades avanzadas de filtrado con django-filter
 
 ## 🛠️ Stack Tecnológico
