@@ -12,6 +12,7 @@ Typical usage example:
 """
 
 from typing import Any
+import threading
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -314,21 +315,24 @@ class OrderViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Send emails
-        try:
-            results = send_order_confirmation_emails(
-                order_data=order_data,
-                user_email=user_email,
-                company_email=company_email
-            )
+        # Send emails asynchronously to avoid blocking the response
+        def send_emails_async():
+            try:
+                send_order_confirmation_emails(
+                    order_data=order_data,
+                    user_email=user_email,
+                    company_email=company_email
+                )
+            except Exception as e:
+                # Log the error but don't crash (email sending is not critical)
+                print(f"Error sending confirmation emails: {e}")
 
-            return Response({
-                "message": "Confirmation emails sent successfully.",
-                "results": results
-            }, status=status.HTTP_200_OK)
+        # Start email sending in background thread
+        email_thread = threading.Thread(target=send_emails_async)
+        email_thread.daemon = True
+        email_thread.start()
 
-        except Exception as e:
-            return Response(
-                {"detail": f"Error sending emails: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Return immediately without waiting for emails
+        return Response({
+            "message": "Order confirmation initiated. Emails will be sent shortly."
+        }, status=status.HTTP_200_OK)
