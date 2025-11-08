@@ -14,6 +14,7 @@ Typical usage example:
 from typing import Any
 
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -27,6 +28,8 @@ from apps.orders.api.serializers import (
     OrderDetailSerializer,
     OrderCreateSerializer
 )
+from apps.orders.email_service import send_order_confirmation_emails
+from apps.company.models import Company
 
 
 @extend_schema_view(
@@ -243,3 +246,89 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def send_confirmation(self, request: Request) -> Response:
+        """Send order confirmation emails to customer and company.
+
+        Expects order data in request body and sends confirmation emails
+        to both customer and company.
+
+        Args:
+            request: HTTP request with order data.
+
+        Returns:
+            Response: 200 with email status or 400 with errors.
+
+        Request body example:
+            {
+                "order_id": "12345",
+                "user_name": "Juan Pérez",
+                "user_email": "juan@example.com",
+                "language": "es",
+                "delivery_info": {
+                    "street": "Calle Principal",
+                    "house_number": "123",
+                    "location": "Ardales",
+                    "phone": "+34623736566",
+                    "notes": "Ring doorbell"
+                },
+                "items": [
+                    {
+                        "name": "Pizza Margherita",
+                        "quantity": 2,
+                        "unit_price": 12.50,
+                        "subtotal": 25.00,
+                        "customization": {
+                            "deselected_ingredients": ["Cebolla"],
+                            "selected_extras": [
+                                {"name": "Queso extra", "price": 2.00}
+                            ],
+                            "additional_notes": "Extra crispy"
+                        }
+                    }
+                ],
+                "total_price": 27.00
+            }
+        """
+        # Get company email from database
+        try:
+            company = Company.objects.first()
+            company_email = company.email if company else None
+        except Company.DoesNotExist:
+            company_email = None
+
+        if not company_email:
+            return Response(
+                {"detail": "Company email not configured."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Extract data from request
+        order_data = request.data
+        user_email = order_data.get('user_email') or request.user.email
+
+        if not user_email:
+            return Response(
+                {"detail": "User email not provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Send emails
+        try:
+            results = send_order_confirmation_emails(
+                order_data=order_data,
+                user_email=user_email,
+                company_email=company_email
+            )
+
+            return Response({
+                "message": "Confirmation emails sent successfully.",
+                "results": results
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error sending emails: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
