@@ -46,9 +46,11 @@ def test_list_categories(api_client):
     response = api_client.get(url, HTTP_ACCEPT_LANGUAGE='es')
     assert response.status_code == 200
     data = response.json()
-    assert len(data) > 0
-    assert 'translations' in data[0]
-    assert 'es' in data[0]['translations']
+    # Handle paginated response
+    results = data.get('results', data) if isinstance(data, dict) else data
+    assert len(results) > 0
+    assert 'translations' in results[0]
+    assert 'es' in results[0]['translations']
 
 
 
