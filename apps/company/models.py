@@ -61,6 +61,7 @@ class Company(TranslatableModel):
     phone = models.IntegerField('Phone')
     whatsapp_phone = models.CharField('WhatsApp Phone', max_length=20, default='+34623736566')
     business_hours = models.TextField('Business Hours', blank=True, default='Lun-Dom: 08:00 - 23:00')
+    delivery_locations = models.JSONField('Delivery Locations', default=list, blank=True, help_text='List of delivery locations with id, name, value, and enabled fields')
 
     class Meta:
         """Meta options for Company model."""
