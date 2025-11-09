@@ -2,10 +2,15 @@
 Email service for sending order confirmations.
 """
 import os
+import logging
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from email.mime.image import MIMEImage
+from smtplib import SMTPException
+from socket import timeout as SocketTimeout
+
+logger = logging.getLogger(__name__)
 
 
 def send_order_confirmation_emails(order_data, user_email, company_email):
@@ -29,16 +34,24 @@ def send_order_confirmation_emails(order_data, user_email, company_email):
     try:
         customer_email_sent = _send_customer_email(order_data, user_email, language)
         results['customer'] = customer_email_sent
+        logger.info(f"Customer email sent successfully to {user_email}")
+    except (SMTPException, SocketTimeout, OSError) as e:
+        logger.error(f"Error sending customer email to {user_email}: {type(e).__name__} - {e}")
+        results['customer'] = False
     except Exception as e:
-        print(f"Error sending customer email: {e}")
+        logger.exception(f"Unexpected error sending customer email: {e}")
         results['customer'] = False
 
     # Send company email
     try:
         company_email_sent = _send_company_email(order_data, company_email)
         results['company'] = company_email_sent
+        logger.info(f"Company email sent successfully to {company_email}")
+    except (SMTPException, SocketTimeout, OSError) as e:
+        logger.error(f"Error sending company email to {company_email}: {type(e).__name__} - {e}")
+        results['company'] = False
     except Exception as e:
-        print(f"Error sending company email: {e}")
+        logger.exception(f"Unexpected error sending company email: {e}")
         results['company'] = False
 
     return results
