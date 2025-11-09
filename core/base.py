@@ -1,7 +1,7 @@
 # core/settings/base.py
 
 from pathlib import Path
-
+import os
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'tu-secreto-aqui'  # Idealmente leerlo de variable de entorno
