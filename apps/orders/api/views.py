@@ -29,7 +29,7 @@ from apps.orders.api.serializers import (
     OrderDetailSerializer,
     OrderCreateSerializer
 )
-from apps.orders.email_service import send_order_confirmation_emails
+from apps.orders.email_service import send_order_confirmation_emails, send_order_cancellation_email
 from apps.company.models import Company
 
 
@@ -247,6 +247,71 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def cancel(self, request: Request, pk=None) -> Response:
+        """Cancel an order (user can only cancel their own orders).
+
+        Users can cancel orders that are in 'pending' or 'confirmed' status.
+        Sends notification emails to company owner when order is cancelled.
+
+        Args:
+            request: HTTP request.
+            pk: Order primary key.
+
+        Returns:
+            Response: 200 with updated order or 400/403 with error.
+
+        Example:
+            >>> POST /api/orders/1/cancel/
+            >>> # Returns 200 with cancelled order details
+        """
+        order = self.get_object()
+
+        # Check permission: only owner can cancel
+        if order.user != request.user:
+            return Response(
+                {"detail": "Solo puedes cancelar tus propios pedidos."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Check if order can be cancelled
+        if order.status not in ['pending', 'confirmed']:
+            return Response(
+                {"detail": f"No puedes cancelar un pedido con estado '{order.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update status
+        order.status = 'cancelled'
+        order.save()
+
+        # Send cancellation notifications asynchronously
+        def send_cancellation_notifications():
+            try:
+                # Get company email
+                company = Company.objects.first()
+                if company and company.email:
+                    send_order_cancellation_email(order, company.email)
+
+                # TODO: Implement WhatsApp notification
+                # send_whatsapp_notification(order, company)
+
+                # TODO: Create admin panel notification
+                # create_admin_notification(order)
+
+            except Exception as e:
+                print(f"Error sending cancellation notifications: {e}")
+
+        # Start notifications in background thread
+        notification_thread = threading.Thread(target=send_cancellation_notifications)
+        notification_thread.daemon = True
+        notification_thread.start()
+
+        return Response(
+            OrderDetailSerializer(order).data,
+            status=status.HTTP_200_OK
+        )
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def send_confirmation(self, request: Request) -> Response:
