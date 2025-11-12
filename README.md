@@ -19,6 +19,7 @@ RESTful API for digital menu management built with Django and Django REST Framew
 - [Environment Variables](#environment-variables)
 - [Project Structure](#project-structure)
 - [Deployment](#deployment)
+- [Implemented Services](#implemented-services)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -314,6 +315,148 @@ python manage.py migrate && python manage.py collectstatic --noinput && gunicorn
 - Use environment variables for sensitive data
 - Enable HTTPS only cookies
 - Configure CORS properly
+
+## 📦 Implemented Services
+
+This section provides a comprehensive overview of all backend services implemented in the DigitalLetter API.
+
+### 🔧 Infrastructure and Configuration
+
+| Service | Description |
+|---------|-------------|
+| Basic REST API (Standard CRUD) | GET/POST/PUT/DELETE endpoints for various models. No authentication or roles |
+| Environment and security configuration (production) | Environment variables, CORS, HTTPS, PostgreSQL, DEBUG=False, ALLOWED_HOSTS |
+| Railway deployment (backend) | Container, database, and environment configuration on Railway |
+| Automatic API documentation (Swagger or ReDoc) | Configuration and exposure of interactive documentation |
+| Custom domain and SSL | DNS + HTTPS configuration (domain not included) |
+| PostgreSQL configuration | Database setup and optimization in production |
+| Static/media files configuration | S3/Cloudinary or local storage for images |
+| Advanced CORS configuration | Configuration of allowed origins and headers |
+| Rate limiting and throttling | Request limits per IP/user |
+| Basic logging and monitoring | Basic logs and alerts configuration |
+
+### 🔐 Authentication and Security
+
+| Service | Description |
+|---------|-------------|
+| User authentication (JWT or session) | Login, registration, password recovery, tokens, and secure validation |
+| Role and permissions system | Different access for employees, administrators, or clients |
+| Custom permissions middleware | IsAdminUser, IsOwner, IsEmployee, etc. |
+| Advanced form validations | Custom validators in serializers and models |
+| Input sanitization | Protection against XSS, SQL injection |
+| Token management (refresh/access) | Refresh token implementation for JWT |
+| Password reset with email | Complete password recovery flow |
+
+### 🛒 Product System
+
+| Service | Description |
+|---------|-------------|
+| Product Model | Fields: name, description, price, availability, image |
+| Product CRUD | Complete API endpoints for products |
+| Categories Model | Categories with name, description, order |
+| Categories CRUD | API endpoints for category management |
+| Ingredients Model | Ingredients with name, availability |
+| Ingredients CRUD | API endpoints for ingredients |
+| Product-Category relationship | Many-to-many or ForeignKey |
+| Product-Ingredients relationship | Many-to-many |
+| Filter by category | Query params to filter products |
+| Product search | Search by name/description |
+| Advanced pagination | Configurable page size, metadata |
+| Product ordering | By price, name, date, popularity |
+| Optimized image management | Upload, validation, optimization (Pillow/Cloudinary) |
+| Featured/favorite products | is_featured field or similar |
+
+### 🛍️ Cart and Order System
+
+| Service | Description |
+|---------|-------------|
+| Cart Model | Cart with items, quantities, totals |
+| Cart CRUD | Add, update, delete items |
+| Automatic total calculation | Subtotal, taxes, discounts |
+| Cart persistence (authenticated user) | Save cart in DB |
+| Orders Model | Order with user, items, status, total, date |
+| Orders CRUD | Create, list, update, cancel orders |
+| Order states | Pending, Processing, Delivered, Cancelled |
+| Order tracking | State timeline |
+| Order cancellation | Logic and validations |
+| Order history per user | Filters and ordering |
+| Stock validation | Check availability before order |
+| Unique order number generation | Automatic Order ID |
+
+### 📧 Email System
+
+| Service | Description |
+|---------|-------------|
+| SMTP/Brevo configuration | Email service setup |
+| Order confirmation email | HTML template + logic |
+| Order cancellation email | HTML template + logic |
+| Registration confirmation email | Welcome email |
+| Password recovery email | Reset password email |
+| Professional HTML templates | Responsive email design |
+| Order status change email | Automatic notification |
+| Email sending error handling | Retry logic, logging |
+
+### 🎯 Promotions and Marketing
+
+| Service | Description |
+|---------|-------------|
+| Promotions Model | Title, description, image, dates, is_active |
+| Promotions CRUD | API endpoints for admin |
+| Public active promotions endpoint | Filter by date and status |
+| Promotion date validation | Auto-activation/deactivation |
+| Promotion ordering | By priority or date |
+| CarouselCard Model | Emoji, text, color, order, is_active |
+| Carousel cards CRUD | API endpoints for admin |
+| Public active carousel endpoint | Only active cards ordered |
+| Hexadecimal color validation | Validator for background_color |
+
+### 🏢 Company Configuration
+
+| Service | Description |
+|---------|-------------|
+| Company Model (Singleton) | General company information |
+| Business hours configuration | JSON field with days and hours |
+| Delivery locations management | JSON field or related model |
+| Configurable WhatsApp numbers | Contact list |
+| Enabled delivery days | Weekly configuration |
+| Configuration CRUD | Endpoints to update settings |
+| Schedule validations | Correct time format |
+| Public configuration endpoint | Info visible to clients |
+
+### 📊 Analytics and Monitoring
+
+| Service | Description |
+|---------|-------------|
+| Visits Model | Visit tracking with IP, date, page |
+| Visit tracking endpoint | POST to register visit |
+| Total visit counter | Aggregate query |
+| Order statistics | Total, average, by status |
+| Product statistics | Best sellers, most viewed |
+| User statistics | Registrations, active users |
+| Metrics dashboard | Consolidated stats endpoint |
+| Date filters in analytics | Date range queries |
+| Data export (CSV/Excel) | Download reports |
+
+### 🧪 Testing and Quality
+
+| Service | Description |
+|---------|-------------|
+| Testing suite | Jest or Pytest configuration + basic tests |
+| Model unit tests | Model coverage |
+| API endpoint tests | CRUD tests |
+| Authentication tests | Login, registration, permissions |
+| Validation tests | Edge cases |
+| Basic CI/CD | GitHub Actions or similar |
+
+### ⚡ Optimizations
+
+| Service | Description |
+|---------|-------------|
+| Select related / Prefetch related | N+1 query optimization |
+| Database indexing | Indexes on frequent fields |
+| Caching with Redis | Cache for heavy queries |
+| Response compression | GZip middleware |
+| Image optimization | Automatic resize, WebP |
 
 ## 🤝 Contributing
 
