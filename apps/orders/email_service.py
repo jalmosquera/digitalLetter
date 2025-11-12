@@ -1,14 +1,11 @@
 """
-Email service for sending order confirmations.
+Email service for sending order confirmations using Brevo API.
 """
 import os
 import logging
-from django.core.mail import EmailMultiAlternatives
+import requests
 from django.template.loader import render_to_string
 from django.conf import settings
-from email.mime.image import MIMEImage
-from smtplib import SMTPException
-from socket import timeout as SocketTimeout
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +32,8 @@ def send_order_confirmation_emails(order_data, user_email, company_email):
         customer_email_sent = _send_customer_email(order_data, user_email, language)
         results['customer'] = customer_email_sent
         logger.info(f"Customer email sent successfully to {user_email}")
-    except (SMTPException, SocketTimeout, OSError) as e:
-        logger.error(f"Error sending customer email to {user_email}: {type(e).__name__} - {e}")
-        results['customer'] = False
     except Exception as e:
-        logger.exception(f"Unexpected error sending customer email: {e}")
+        logger.error(f"Error sending customer email to {user_email}: {type(e).__name__} - {e}")
         results['customer'] = False
 
     # Send company email
@@ -47,18 +41,15 @@ def send_order_confirmation_emails(order_data, user_email, company_email):
         company_email_sent = _send_company_email(order_data, company_email)
         results['company'] = company_email_sent
         logger.info(f"Company email sent successfully to {company_email}")
-    except (SMTPException, SocketTimeout, OSError) as e:
-        logger.error(f"Error sending company email to {company_email}: {type(e).__name__} - {e}")
-        results['company'] = False
     except Exception as e:
-        logger.exception(f"Unexpected error sending company email: {e}")
+        logger.error(f"Error sending company email to {company_email}: {type(e).__name__} - {e}")
         results['company'] = False
 
     return results
 
 
 def _send_customer_email(order_data, recipient_email, language='es'):
-    """Send order confirmation email to customer."""
+    """Send order confirmation email to customer using Brevo API."""
 
     # Email subject
     if language == 'es':
@@ -83,32 +74,17 @@ def _send_customer_email(order_data, recipient_email, language='es'):
         }
     )
 
-    # Create email
-    email = EmailMultiAlternatives(
+    # Send via Brevo API
+    return _send_via_brevo_api(
+        to_email=recipient_email,
+        to_name=order_data['user_name'],
         subject=subject,
-        body='',  # Plain text version (empty for now)
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[recipient_email]
+        html_content=html_content
     )
-
-    email.attach_alternative(html_content, "text/html")
-
-    # Attach logo as inline image
-    logo_path = os.path.join(settings.BASE_DIR, 'apps/orders/static/images/logoEquss.png')
-    if os.path.exists(logo_path):
-        with open(logo_path, 'rb') as f:
-            logo_img = MIMEImage(f.read())
-            logo_img.add_header('Content-ID', '<logo>')
-            logo_img.add_header('Content-Disposition', 'inline', filename='logoEquss.png')
-            email.attach(logo_img)
-
-    # Send email
-    email.send()
-    return True
 
 
 def _send_company_email(order_data, recipient_email):
-    """Send order notification email to company."""
+    """Send order notification email to company using Brevo API."""
 
     subject = f"🔔 Nuevo Pedido #{order_data['order_id']} - {order_data['user_name']}"
 
@@ -129,16 +105,52 @@ def _send_company_email(order_data, recipient_email):
         }
     )
 
-    # Create email
-    email = EmailMultiAlternatives(
+    # Send via Brevo API
+    return _send_via_brevo_api(
+        to_email=recipient_email,
+        to_name="Equus Pub",
         subject=subject,
-        body='',  # Plain text version
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[recipient_email]
+        html_content=html_content
     )
 
-    email.attach_alternative(html_content, "text/html")
 
-    # Send email
-    email.send()
-    return True
+def _send_via_brevo_api(to_email, to_name, subject, html_content):
+    """Send email via Brevo HTTP API."""
+
+    brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
+    if not brevo_api_key:
+        logger.error("BREVO_API_KEY not configured in settings")
+        return False
+
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": brevo_api_key,
+        "content-type": "application/json"
+    }
+
+    payload = {
+        "sender": {
+            "name": "Equus Pub",
+            "email": settings.DEFAULT_FROM_EMAIL
+        },
+        "to": [
+            {
+                "email": to_email,
+                "name": to_name
+            }
+        ],
+        "subject": subject,
+        "htmlContent": html_content
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        response.raise_for_status()
+        logger.info(f"Email sent successfully via Brevo API to {to_email}")
+        return True
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Brevo API error: {e}")
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f"Response: {e.response.text}")
+        return False
