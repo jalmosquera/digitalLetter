@@ -233,7 +233,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'total_price': '45.50',
             'delivery_street': 'Calle Principal',
             'delivery_house_number': '123',
-            'delivery_location': 'ardales',
+            'delivery_location': 'Ardales',
             'phone': '+34623736566',
             'notes': 'Ring doorbell twice',
             'items': [
@@ -301,7 +301,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         >>> data = {
         ...     'delivery_street': 'Calle Principal',
         ...     'delivery_house_number': '123',
-        ...     'delivery_location': 'ardales',
+        ...     'delivery_location': 'Ardales',
         ...     'phone': '+34623736566',
         ...     'notes': 'Ring doorbell',
         ...     'items': [
