@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.company',
     'apps.users',
     'apps.orders',
+    'apps.promotions',
     'drf_spectacular',
     'rest_framework_simplejwt',
     'parler',
