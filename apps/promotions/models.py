@@ -88,3 +88,85 @@ class Promotion(models.Model):
         """
         status = 'Active' if self.is_active else 'Inactive'
         return f"{self.title} ({status})"
+
+
+class CarouselCard(models.Model):
+    """Carousel card model for animated promotional cards.
+
+    Represents a promotional card that appears in the animated carousel
+    on the home page. Cards display emoji, text, and custom background color.
+
+    Attributes:
+        text (str): Main text content of the card.
+        emoji (str): Emoji icon to display (e.g., 🍔, 🍕, 🌮).
+        background_color (str): Hex color code for card background.
+        is_active (bool): Whether card is active. Defaults to True.
+        order (int): Display order in carousel (lower numbers first). Defaults to 0.
+        created_at (datetime): Timestamp when card was created.
+        updated_at (datetime): Timestamp of last update.
+
+    Example:
+        >>> card = CarouselCard.objects.create(
+        ...     text='Hamburguesas Deliciosas',
+        ...     emoji='🍔',
+        ...     background_color='#FF6B35',
+        ...     is_active=True,
+        ...     order=1
+        ... )
+        >>> card.text
+        'Hamburguesas Deliciosas'
+
+    Note:
+        - Only active cards are displayed in carousel
+        - Cards scroll automatically from right to left
+        - Background color should be in hex format (#RRGGBB)
+    """
+
+    text = models.CharField(
+        'Text',
+        max_length=100,
+        help_text='Text content displayed on the card'
+    )
+    emoji = models.CharField(
+        'Emoji',
+        max_length=10,
+        help_text='Emoji icon (e.g., 🍔, 🍕, 🌮)'
+    )
+    background_color = models.CharField(
+        'Background Color',
+        max_length=7,
+        default='#FF6B35',
+        help_text='Hex color code for card background (e.g., #FF6B35)'
+    )
+    is_active = models.BooleanField(
+        'Active',
+        default=True,
+        help_text='Whether this card is currently active'
+    )
+    order = models.IntegerField(
+        'Display Order',
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text='Order in carousel (lower numbers appear first)'
+    )
+    created_at = models.DateTimeField('Created At', auto_now_add=True)
+    updated_at = models.DateTimeField('Updated At', auto_now=True)
+
+    class Meta:
+        db_table = 'carousel_cards'
+        ordering = ['order', '-created_at']
+        verbose_name = 'Carousel Card'
+        verbose_name_plural = 'Carousel Cards'
+
+    def __str__(self) -> str:
+        """Return string representation of the carousel card.
+
+        Returns:
+            str: Card emoji and text with status.
+
+        Example:
+            >>> str(card)
+            '🍔 Hamburguesas Deliciosas (Active)'
+        """
+        status = 'Active' if self.is_active else 'Inactive'
+        return f"{self.emoji} {self.text} ({status})"
