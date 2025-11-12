@@ -114,6 +114,65 @@ def _send_company_email(order_data, recipient_email):
     )
 
 
+def send_order_cancellation_email(order, company_email):
+    """
+    Send order cancellation notification email to company.
+
+    Args:
+        order: Order instance that was cancelled
+        company_email (str): Company email address
+
+    Returns:
+        bool: True if email sent successfully
+    """
+    try:
+        subject = f"❌ Pedido Cancelado #{order.id} - {order.user.get_full_name() or order.user.username}"
+
+        # Prepare order items data
+        items_data = []
+        for item in order.items.all():
+            items_data.append({
+                'name': item.product_name,
+                'quantity': item.quantity,
+                'unit_price': float(item.unit_price),
+                'subtotal': float(item.subtotal),
+            })
+
+        # Render HTML template
+        html_content = render_to_string(
+            'emails/company_order_cancellation.html',
+            {
+                'order_id': order.id,
+                'user_name': order.user.get_full_name() or order.user.username,
+                'user_email': order.user.email,
+                'delivery_street': order.delivery_street,
+                'delivery_house_number': order.delivery_house_number,
+                'delivery_location': order.delivery_location,
+                'phone': order.phone,
+                'notes': order.notes or '',
+                'items': items_data,
+                'total_price': float(order.total_price),
+                'created_at': order.created_at,
+            }
+        )
+
+        # Send via Brevo API
+        email_sent = _send_via_brevo_api(
+            to_email=company_email,
+            to_name="Equus Pub",
+            subject=subject,
+            html_content=html_content
+        )
+
+        if email_sent:
+            logger.info(f"Cancellation email sent successfully to {company_email} for order #{order.id}")
+        return email_sent
+
+    except Exception as e:
+        logger.error(f"Error sending cancellation email: {type(e).__name__} - {e}")
+        return False
+
+
 def _send_via_brevo_api(to_email, to_name, subject, html_content):
     """Send email via Brevo HTTP API."""
 
