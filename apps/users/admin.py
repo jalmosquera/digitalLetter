@@ -18,7 +18,35 @@ See Also:
 """
 
 from django.contrib import admin
-from .models import PasswordResetToken
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import User, PasswordResetToken
+
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    """Admin interface for User model with custom fields."""
+
+    list_display = ('username', 'email', 'name', 'role', 'is_staff', 'is_active')
+    list_filter = ('role', 'is_staff', 'is_active', 'date_joined')
+    search_fields = ('username', 'email', 'name', 'phone')
+    ordering = ('-date_joined',)
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal Info', {'fields': ('name', 'email', 'phone', 'image')}),
+        ('Location', {'fields': ('address', 'location', 'province')}),
+        ('Permissions', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'name', 'password1', 'password2', 'role', 'is_staff'),
+        }),
+    )
+
+    readonly_fields = ('last_login', 'date_joined')
 
 
 @admin.register(PasswordResetToken)
