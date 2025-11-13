@@ -2,16 +2,10 @@
 from django.contrib import admin
 from django.urls import path,include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from rest_framework_simplejwt.views import TokenRefreshView
-from apps.users.api.serializers import EmailTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
 
-
-class EmailTokenObtainPairView(TokenObtainPairView):
-    """Custom JWT token view that uses email for authentication."""
-    serializer_class = EmailTokenObtainPairSerializer
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,8 +15,8 @@ urlpatterns = [
     path('', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
-    # Auth
-    path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # Auth - Uses username for authentication
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Categories API
