@@ -172,7 +172,7 @@ class UserListSerializer(serializers.ModelSerializer):
         """Meta options for UserListSerializer."""
 
         model = User
-        fields = ['id', 'username', 'name', 'email', 'role', 'image', 'address', 'location', 'province', 'phone']
+        fields = ['id', 'username', 'name', 'email', 'role', 'image', 'address', 'location', 'province', 'phone', 'is_active']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
