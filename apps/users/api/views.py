@@ -148,6 +148,7 @@ class RegisterEmploye(viewsets.ModelViewSet):
             password = request.data.get("password")
             user = serializer.save()
             user.set_password(password)
+            user.is_active = True  # Activate user on registration
             user.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -235,6 +236,7 @@ class RegisterClients(viewsets.ModelViewSet):
             password = request.data.get("password")
             user = serializer.save()
             user.set_password(password)
+            user.is_active = True  # Activate user on registration
             user.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
