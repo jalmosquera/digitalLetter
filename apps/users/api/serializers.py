@@ -6,6 +6,8 @@ creation, profile management, and password changes through Django REST Framework
 
 from typing import Any, Dict
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
 from ..models import User
 
 
@@ -253,4 +255,121 @@ class ChangePasswordSerializer(serializers.Serializer):
         """
         if data['new_password'] != data['new_password_confirm']:
             raise serializers.ValidationError("Las contraseñas no coinciden.")
+        return data
+
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Custom JWT serializer that authenticates using email instead of username.
+
+    Extends TokenObtainPairSerializer to allow users to login with their email
+    address instead of username. The serializer validates credentials and returns
+    JWT access and refresh tokens.
+
+    Attributes:
+        email (EmailField): User's email address for authentication.
+        password (CharField): User's password (write-only).
+
+    Example:
+        >>> data = {
+        ...     'email': 'user@example.com',
+        ...     'password': 'securepass123'
+        ... }
+        >>> serializer = EmailTokenObtainPairSerializer(data=data)
+        >>> if serializer.is_valid():
+        ...     tokens = serializer.validated_data
+        ...     access_token = tokens['access']
+        ...     refresh_token = tokens['refresh']
+
+    Note:
+        - Replaces the default 'username' field with 'email'
+        - Returns standard JWT token pair (access + refresh)
+        - Password field is write-only for security
+    """
+
+    username_field = User.EMAIL_FIELD
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the serializer and replace username field with email."""
+        super().__init__(*args, **kwargs)
+        # Remove the username field and add email field
+        self.fields['email'] = serializers.EmailField(required=True)
+        self.fields.pop('username', None)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Serializer for password reset request (step 1).
+
+    Handles the initial password reset request where the user provides their
+    email address. A password reset token will be generated and sent to this email.
+
+    Attributes:
+        email (EmailField): User's registered email address.
+
+    Example:
+        >>> data = {'email': 'user@example.com'}
+        >>> serializer = PasswordResetRequestSerializer(data=data)
+        >>> if serializer.is_valid():
+        ...     email = serializer.validated_data['email']
+        ...     # Send reset token to email
+    """
+
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value: str) -> str:
+        """Validate that the email exists in the database.
+
+        Args:
+            value: Email address provided by user.
+
+        Returns:
+            Validated email address.
+
+        Raises:
+            ValidationError: If email is not registered.
+        """
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("No existe una cuenta con este correo electrónico.")
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Serializer for password reset confirmation (step 2).
+
+    Handles the password reset confirmation where the user provides the reset
+    token and their new password. The new password must be confirmed.
+
+    Attributes:
+        token (CharField): Password reset token received via email.
+        new_password (CharField): New password to set.
+        new_password_confirm (CharField): Confirmation of new password.
+
+    Example:
+        >>> data = {
+        ...     'token': 'abc123def456',
+        ...     'new_password': 'newsecurepass',
+        ...     'new_password_confirm': 'newsecurepass'
+        ... }
+        >>> serializer = PasswordResetConfirmSerializer(data=data)
+        >>> if serializer.is_valid():
+        ...     # Reset password with token
+    """
+
+    token = serializers.CharField(required=True, max_length=100)
+    new_password = serializers.CharField(required=True, write_only=True, min_length=6)
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, data: Dict[str, str]) -> Dict[str, str]:
+        """Validate that new password and confirmation match.
+
+        Args:
+            data: Dictionary containing token, new_password, and new_password_confirm.
+
+        Returns:
+            Validated data dictionary.
+
+        Raises:
+            ValidationError: If passwords don't match.
+        """
+        if data['new_password'] != data['new_password_confirm']:
+            raise serializers.ValidationError({"new_password_confirm": "Las contraseñas no coinciden."})
         return data

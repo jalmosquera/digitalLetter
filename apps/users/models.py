@@ -8,6 +8,9 @@ information for the digital menu system.
 from typing import Optional
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils import timezone
+import secrets
+from datetime import timedelta
 
 
 class UserManager(BaseUserManager):
@@ -271,3 +274,90 @@ class User(AbstractUser):
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email", "name"]
+
+
+class PasswordResetToken(models.Model):
+    """Model for managing password reset tokens.
+
+    Stores temporary tokens used for password reset functionality. Tokens are
+    randomly generated and expire after 1 hour for security purposes.
+
+    Attributes:
+        user (ForeignKey): Reference to the User requesting password reset.
+        token (str): Random 64-character token for verification.
+        created_at (datetime): Timestamp when token was created.
+        expires_at (datetime): Expiration timestamp (1 hour after creation).
+        used (bool): Whether the token has been used. Defaults to False.
+
+    Example:
+        >>> # Create password reset token
+        >>> user = User.objects.get(email='user@example.com')
+        >>> reset_token = PasswordResetToken.objects.create(user=user)
+        >>> reset_token.token
+        'abc123def456...'  # 64-character random token
+        >>> reset_token.is_valid()
+        True
+        >>>
+        >>> # Check if token is still valid
+        >>> if reset_token.is_valid():
+        ...     user.set_password('newpassword')
+        ...     user.save()
+        ...     reset_token.used = True
+        ...     reset_token.save()
+
+    Note:
+        - Tokens expire 1 hour after creation
+        - Tokens can only be used once (used=True after first use)
+        - Old tokens should be cleaned up periodically
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens',
+        verbose_name='User'
+    )
+    token = models.CharField('Token', max_length=64, unique=True)
+    created_at = models.DateTimeField('Created At', auto_now_add=True)
+    expires_at = models.DateTimeField('Expires At')
+    used = models.BooleanField('Used', default=False)
+
+    class Meta:
+        db_table = 'password_reset_tokens'
+        verbose_name = 'Password Reset Token'
+        verbose_name_plural = 'Password Reset Tokens'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        """Override save to generate token and set expiration.
+
+        Automatically generates a secure random token and sets expiration
+        to 1 hour from creation if this is a new instance.
+        """
+        if not self.pk:  # New instance
+            self.token = secrets.token_urlsafe(48)  # Generates 64-char token
+            self.expires_at = timezone.now() + timedelta(hours=1)
+        super().save(*args, **kwargs)
+
+    def is_valid(self) -> bool:
+        """Check if the token is still valid.
+
+        Returns:
+            bool: True if token hasn't been used and hasn't expired.
+
+        Example:
+            >>> token = PasswordResetToken.objects.get(token='abc123...')
+            >>> if token.is_valid():
+            ...     # Process password reset
+            ...     pass
+        """
+        return not self.used and timezone.now() < self.expires_at
+
+    def __str__(self) -> str:
+        """Return string representation of the token.
+
+        Returns:
+            str: User email and token status.
+        """
+        status = "Valid" if self.is_valid() else "Invalid/Expired"
+        return f"{self.user.email} - {status}"

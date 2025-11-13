@@ -18,5 +18,26 @@ See Also:
 """
 
 from django.contrib import admin
+from .models import PasswordResetToken
 
-# Register your models here.
+
+@admin.register(PasswordResetToken)
+class PasswordResetTokenAdmin(admin.ModelAdmin):
+    """Admin interface for PasswordResetToken model."""
+
+    list_display = ('user', 'token_preview', 'created_at', 'expires_at', 'used', 'is_valid_display')
+    list_filter = ('used', 'created_at')
+    search_fields = ('user__email', 'user__username', 'token')
+    readonly_fields = ('token', 'created_at', 'expires_at')
+    ordering = ('-created_at',)
+
+    def token_preview(self, obj):
+        """Show first 16 characters of token."""
+        return f"{obj.token[:16]}..."
+    token_preview.short_description = 'Token'
+
+    def is_valid_display(self, obj):
+        """Display token validity status."""
+        return obj.is_valid()
+    is_valid_display.boolean = True
+    is_valid_display.short_description = 'Is Valid'

@@ -43,13 +43,16 @@ from django.db.models import Q, QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.users.permisionsUsers import IsStaff, IsBoss, IsStaffOrEmploye
-from apps.users.models import User
+from apps.users.models import User, PasswordResetToken
 from apps.users.api.serializers import (
     SerializerClients,
     SerializerEmploye,
     UserListSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
+from apps.users.email_service import send_password_reset_email
 
 
 @extend_schema_view(
@@ -479,4 +482,162 @@ class ChangePasswordView(APIView):
                 {"detail": "Password updated successfully."},
                 status=status.HTTP_200_OK
             )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["auth"],
+    methods=["POST"],
+    description="Request password reset by providing email address",
+    request=PasswordResetRequestSerializer,
+    responses={
+        200: Response({"description": "Password reset email sent"}),
+        400: Response({"description": "Invalid email or validation error"}),
+    },
+)
+class PasswordResetRequestView(APIView):
+    """Request a password reset token.
+
+    Allows users to request a password reset by providing their email address.
+    A secure token is generated and sent to the user's email with instructions
+    to reset their password.
+
+    Permissions:
+        - AllowAny: Public endpoint accessible to unauthenticated users
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """Generate and send password reset token to user's email.
+
+        Args:
+            request: HTTP request containing user's email.
+
+        Returns:
+            Response with success message (200) or validation errors (400).
+
+        Example:
+            POST /api/password-reset/
+            {
+                "email": "user@example.com"
+            }
+
+        Note:
+            - Token is valid for 1 hour
+            - Previous unused tokens are invalidated
+            - Email must be registered in the system
+        """
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = User.objects.get(email=email)
+
+            # Invalidate previous unused tokens for this user
+            PasswordResetToken.objects.filter(user=user, used=False).update(used=True)
+
+            # Create new reset token
+            reset_token = PasswordResetToken.objects.create(user=user)
+
+            # Get language from request (default to Spanish)
+            language = request.data.get('language', 'es')
+
+            # Send email with reset link
+            try:
+                email_sent = send_password_reset_email(user, reset_token, language)
+                if not email_sent:
+                    return Response({
+                        "detail": "Error al enviar el correo electrónico. Por favor, intenta nuevamente."
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                # Log error but don't expose details to user
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error sending password reset email: {e}")
+                return Response({
+                    "detail": "Error al enviar el correo electrónico. Por favor, intenta nuevamente."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            return Response({
+                "detail": "Se ha enviado un correo electrónico con las instrucciones para restablecer tu contraseña."
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["auth"],
+    methods=["POST"],
+    description="Reset password using token received via email",
+    request=PasswordResetConfirmSerializer,
+    responses={
+        200: Response({"description": "Password reset successfully"}),
+        400: Response({"description": "Invalid or expired token"}),
+    },
+)
+class PasswordResetConfirmView(APIView):
+    """Confirm password reset with token.
+
+    Allows users to reset their password by providing the token they received
+    via email along with their new password.
+
+    Permissions:
+        - AllowAny: Public endpoint accessible to unauthenticated users
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """Reset user's password using the provided token.
+
+        Args:
+            request: HTTP request containing token and new password.
+
+        Returns:
+            Response with success message (200) or error details (400).
+
+        Example:
+            POST /api/password-reset/confirm/
+            {
+                "token": "abc123def456",
+                "new_password": "newsecurepass",
+                "new_password_confirm": "newsecurepass"
+            }
+
+        Note:
+            - Token must be valid and not expired
+            - Token can only be used once
+            - New password must meet minimum requirements
+        """
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            token_str = serializer.validated_data['token']
+            new_password = serializer.validated_data['new_password']
+
+            try:
+                reset_token = PasswordResetToken.objects.get(token=token_str)
+
+                if not reset_token.is_valid():
+                    return Response({
+                        "detail": "El token ha expirado o ya fue utilizado."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                # Reset password
+                user = reset_token.user
+                user.set_password(new_password)
+                user.save()
+
+                # Mark token as used
+                reset_token.used = True
+                reset_token.save()
+
+                return Response({
+                    "detail": "Contraseña actualizada exitosamente."
+                }, status=status.HTTP_200_OK)
+
+            except PasswordResetToken.DoesNotExist:
+                return Response({
+                    "detail": "Token inválido."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
