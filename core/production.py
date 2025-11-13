@@ -52,13 +52,6 @@ STATICFILES_DIRS = []
 # Media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# CORS configuration from environment
-cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
-if cors_origins:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
-else:
-    CORS_ALLOWED_ORIGINS = []
-
 # Security settings
 # Trust Railway's proxy SSL header
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -71,17 +64,28 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 # Language code from environment
 LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE', 'es')
 
-
-
+# CORS configuration from environment
+cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if cors_origins:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
+else:
+    # Fallback to default allowed origins if not set in environment
+    CORS_ALLOWED_ORIGINS = [
+        "https://equuspub.vercel.app",
+        "http://localhost:5173",
+    ]
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    "https://digital-letter-front.vercel.app",
-    "http://localhost:5173",
-]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = [
-    "https://digital-letter-front.vercel.app",
-    "https://*.railway.app",
-]
+
+# CSRF Trusted Origins
+csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',') if origin.strip()]
+else:
+    # Fallback to default trusted origins if not set in environment
+    CSRF_TRUSTED_ORIGINS = [
+        "https://equuspub.vercel.app",
+        "https://*.railway.app",
+    ]
 
