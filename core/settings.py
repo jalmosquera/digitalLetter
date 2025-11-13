@@ -242,11 +242,13 @@ PARLER_LANGUAGES = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://digital-letter-front.vercel.app",
+    "https://equuspub.vercel.app",
     "https://digitalletter-production-d688.up.railway.app",
 ]
 
 # Frontend URL for email links
+# 🔧 IMPORTANT: If client purchases a custom domain, update FRONTEND_URL environment variable on Railway
+# and add the new domain to CORS_ALLOWED_ORIGINS and CSRF_TRUSTED_ORIGINS below
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -263,8 +265,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# 🔧 IMPORTANT: If client purchases a custom domain, add it to this list
+# Example: "https://www.customdomain.com"
 CSRF_TRUSTED_ORIGINS = [
-    "https://digital-letter-front.vercel.app",
+    "https://equuspub.vercel.app",
     "https://digitalletter-production-d688.up.railway.app",
     "https://*.railway.app",
 ]
