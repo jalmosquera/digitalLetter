@@ -9,7 +9,7 @@ import json
 from typing import Any, Dict, List, Optional
 from rest_framework import serializers
 from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
-from apps.products.models import Product
+from apps.products.models import Product, ProductOption, ProductOptionChoice
 from apps.categories.api.serializers import CategorySerializerGet
 from apps.categories.models import Category
 from apps.ingredients.api.serializers import IngredientSerializer
@@ -102,6 +102,11 @@ class ProductSerializerPost(TranslatableModelSerializer):
     ingredients = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Ingredient.objects.all(),
+        required=False
+    )
+    options = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=ProductOption.objects.all(),
         required=False
     )
 
@@ -229,6 +234,26 @@ class ProductSerializerPost(TranslatableModelSerializer):
                 # Single value, convert to list
                 data['ingredients'] = [int(ingredients_value)]
 
+        # Handle options field - convert string or JSON string to list
+        if 'options' in data:
+            options_value = data['options']  # Don't use get_value() here - we need all values
+            if isinstance(options_value, str):
+                try:
+                    # Try parsing as JSON array first
+                    options = json.loads(options_value)
+                    if not isinstance(options, list):
+                        options = [options]
+                except (json.JSONDecodeError, ValueError):
+                    # If not JSON, try comma-separated values
+                    options = [int(opt.strip()) for opt in options_value.split(',') if opt.strip()]
+                data['options'] = options
+            elif isinstance(options_value, list):
+                # Already a list, convert each value to int
+                data['options'] = [int(opt) if not isinstance(opt, int) else opt for opt in options_value]
+            elif not isinstance(options_value, list):
+                # Single value, convert to list
+                data['options'] = [int(options_value)]
+
         # Handle boolean field - convert string to boolean
         if 'available' in data:
             available_value = get_value(data['available'])
@@ -303,9 +328,11 @@ class ProductSerializerPost(TranslatableModelSerializer):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', [])
         ingredients = validated_data.pop('ingredients', [])
+        options = validated_data.pop('options', [])
         instance = Product.objects.create(**validated_data)
         instance.categories.set(categories)
         instance.ingredients.set(ingredients)
+        instance.options.set(options)
         for lang_code, translation_fields in translations.items():
             instance.set_current_language(lang_code)
             for attr, value in translation_fields.items():
@@ -351,10 +378,13 @@ class ProductSerializerPost(TranslatableModelSerializer):
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', None)
         ingredients = validated_data.pop('ingredients', None)
+        options = validated_data.pop('options', None)
         if categories is not None:
             instance.categories.set(categories)
         if ingredients is not None:
             instance.ingredients.set(ingredients)
+        if options is not None:
+            instance.options.set(options)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         for lang_code, translation_fields in translations.items():
@@ -363,6 +393,99 @@ class ProductSerializerPost(TranslatableModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class ProductOptionChoiceSerializer(TranslatableModelSerializer):
+    """Serializer for ProductOptionChoice instances with translations.
+
+    Handles serialization of individual option choices (e.g., "Pollo", "Carne", "Pescado")
+    within a product option.
+
+    Attributes:
+        translations (TranslatedFieldsField): Exposes translatable name field.
+
+    Meta:
+        model: ProductOptionChoice model this serializer is based on.
+        fields: All relevant fields including translations, icon, price_adjustment, order.
+        read_only_fields: ID field cannot be modified.
+
+    Example:
+        >>> # Serialize a choice
+        >>> choice = ProductOptionChoice.objects.get(id=1)
+        >>> serializer = ProductOptionChoiceSerializer(choice)
+        >>> serializer.data
+        {
+            'id': 1,
+            'option': 1,
+            'translations': {
+                'en': {'name': 'Chicken'},
+                'es': {'name': 'Pollo'}
+            },
+            'icon': '🍗',
+            'price_adjustment': '0.00',
+            'order': 1
+        }
+    """
+
+    translations = TranslatedFieldsField(shared_model=ProductOptionChoice)
+
+    class Meta:
+        model = ProductOptionChoice
+        fields = ['id', 'option', 'translations', 'icon', 'price_adjustment', 'order']
+        read_only_fields = ['id']
+
+
+class ProductOptionSerializer(TranslatableModelSerializer):
+    """Serializer for ProductOption instances with nested choices.
+
+    Handles serialization of product options (e.g., "Tipo de Carne", "Tipo de Salsa")
+    including their related choices.
+
+    Attributes:
+        translations (TranslatedFieldsField): Exposes translatable name field.
+        choices (ProductOptionChoiceSerializer): Nested serializer for option choices.
+
+    Meta:
+        model: ProductOption model this serializer is based on.
+        fields: All relevant fields including translations, is_required, order, choices.
+        read_only_fields: ID field cannot be modified.
+
+    Example:
+        >>> # Serialize an option with choices
+        >>> option = ProductOption.objects.get(id=1)
+        >>> serializer = ProductOptionSerializer(option)
+        >>> serializer.data
+        {
+            'id': 1,
+            'translations': {
+                'en': {'name': 'Meat Type'},
+                'es': {'name': 'Tipo de Carne'}
+            },
+            'is_required': True,
+            'order': 1,
+            'choices': [
+                {
+                    'id': 1,
+                    'translations': {
+                        'en': {'name': 'Chicken'},
+                        'es': {'name': 'Pollo'}
+                    },
+                    'icon': '🍗',
+                    'price_adjustment': '0.00',
+                    'order': 1
+                },
+                ...
+            ]
+        }
+    """
+
+    translations = TranslatedFieldsField(shared_model=ProductOption)
+    choices = ProductOptionChoiceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductOption
+        fields = ['id', 'translations', 'is_required', 'order', 'choices']
+        read_only_fields = ['id']
 
 
 class ProductSerializerGet(TranslatableModelSerializer):
@@ -448,6 +571,7 @@ class ProductSerializerGet(TranslatableModelSerializer):
     translations = TranslatedFieldsField(shared_model=Product)
     categories = CategorySerializerGet(many=True, read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
+    options = ProductOptionSerializer(many=True, read_only=True)
 
     class Meta:
         """Meta options for ProductSerializerGet."""

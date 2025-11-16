@@ -20,9 +20,9 @@ See Also:
 """
 
 from django.contrib import admin
-from parler.admin import TranslatableAdmin
+from parler.admin import TranslatableAdmin, TranslatableTabularInline
 
-from .models import Product
+from .models import Product, ProductOption, ProductOptionChoice
 
 
 @admin.register(Product)
@@ -61,4 +61,72 @@ class ProductAdmin(TranslatableAdmin):
     """
 
     list_display = ('name', 'description', 'created_at', 'updated_at')
-    
+
+
+class ProductOptionChoiceInline(TranslatableTabularInline):
+    """Inline admin for ProductOptionChoice within ProductOption.
+
+    This inline admin allows managing option choices directly within
+    the product option edit page. Users can add, edit, or delete
+    choices without leaving the option edit screen.
+
+    Attributes:
+        model: ProductOptionChoice model to manage.
+        extra: Number of empty choice forms to display by default.
+        fields: Fields to display/edit in the inline form.
+    """
+
+    model = ProductOptionChoice
+    extra = 1
+    fields = ('name', 'icon', 'price_adjustment', 'order')
+
+
+@admin.register(ProductOption)
+class ProductOptionAdmin(TranslatableAdmin):
+    """Admin configuration for ProductOption model with translation support.
+
+    This admin class provides an interface for managing product options
+    (like "Tipo de Carne", "Tipo de Salsa") with their associated choices.
+
+    Attributes:
+        list_display: Fields shown in the list view.
+        list_filter: Filters available in the sidebar.
+        inlines: Inline forms for managing choices within the option.
+
+    Examples:
+        Create a new option::
+
+            # Navigate to /admin/products/productoption/add/
+            # Set name in Spanish: "Tipo de Carne"
+            # Set name in English: "Meat Type"
+            # Set is_required: True
+            # Add choices inline:
+            #   - Pollo / Chicken 🍗
+            #   - Carne / Beef 🥩
+            #   - Pescado / Fish 🐟
+            #   - Sin carne / No meat
+    """
+
+    list_display = ('name', 'is_required', 'order', 'created_at')
+    list_filter = ('is_required',)
+    inlines = [ProductOptionChoiceInline]
+    ordering = ['order', 'id']
+
+
+@admin.register(ProductOptionChoice)
+class ProductOptionChoiceAdmin(TranslatableAdmin):
+    """Admin configuration for ProductOptionChoice model.
+
+    Standalone admin for managing individual option choices.
+    Typically choices are managed through the ProductOption inline,
+    but this provides a separate interface if needed.
+
+    Attributes:
+        list_display: Fields shown in the list view.
+        list_filter: Filters available in the sidebar.
+    """
+
+    list_display = ('name', 'option', 'icon', 'price_adjustment', 'order')
+    list_filter = ('option',)
+    ordering = ['option', 'order', 'id']
+
