@@ -222,41 +222,63 @@ class ProductSerializerPost(TranslatableModelSerializer):
         if 'ingredients' in data:
             ingredients_value = data['ingredients']  # Don't use get_value() here - we need all values
             if isinstance(ingredients_value, str):
-                try:
-                    # Try parsing as JSON array first
-                    ingredients = json.loads(ingredients_value)
-                    if not isinstance(ingredients, list):
-                        ingredients = [ingredients]
-                except (json.JSONDecodeError, ValueError):
-                    # If not JSON, try comma-separated values
-                    ingredients = [int(ing.strip()) for ing in ingredients_value.split(',') if ing.strip()]
-                data['ingredients'] = ingredients
+                # Skip if it's literally the string "undefined" or empty
+                if ingredients_value.lower() in ('undefined', 'null', ''):
+                    data.pop('ingredients')
+                else:
+                    try:
+                        # Try parsing as JSON array first
+                        ingredients = json.loads(ingredients_value)
+                        if not isinstance(ingredients, list):
+                            ingredients = [ingredients]
+                    except (json.JSONDecodeError, ValueError):
+                        # If not JSON, try comma-separated values
+                        ingredients = [int(ing.strip()) for ing in ingredients_value.split(',') if ing.strip()]
+                    data['ingredients'] = ingredients
             elif isinstance(ingredients_value, list):
-                # Already a list, convert each value to int
-                data['ingredients'] = [int(ing) if not isinstance(ing, int) else ing for ing in ingredients_value]
+                # Already a list, filter out undefined/null and convert each value to int
+                valid_ingredients = []
+                for ing in ingredients_value:
+                    if ing not in ('undefined', 'null', None, ''):
+                        valid_ingredients.append(int(ing) if not isinstance(ing, int) else ing)
+                data['ingredients'] = valid_ingredients if valid_ingredients else None
             elif not isinstance(ingredients_value, list):
                 # Single value, convert to list
-                data['ingredients'] = [int(ingredients_value)]
+                if str(ingredients_value).lower() not in ('undefined', 'null', ''):
+                    data['ingredients'] = [int(ingredients_value)]
+                else:
+                    data.pop('ingredients')
 
         # Handle options field - convert string or JSON string to list
         if 'options' in data:
             options_value = data['options']  # Don't use get_value() here - we need all values
             if isinstance(options_value, str):
-                try:
-                    # Try parsing as JSON array first
-                    options = json.loads(options_value)
-                    if not isinstance(options, list):
-                        options = [options]
-                except (json.JSONDecodeError, ValueError):
-                    # If not JSON, try comma-separated values
-                    options = [int(opt.strip()) for opt in options_value.split(',') if opt.strip()]
-                data['options'] = options
+                # Skip if it's literally the string "undefined" or empty
+                if options_value.lower() in ('undefined', 'null', ''):
+                    data.pop('options')
+                else:
+                    try:
+                        # Try parsing as JSON array first
+                        options = json.loads(options_value)
+                        if not isinstance(options, list):
+                            options = [options]
+                    except (json.JSONDecodeError, ValueError):
+                        # If not JSON, try comma-separated values
+                        options = [int(opt.strip()) for opt in options_value.split(',') if opt.strip()]
+                    data['options'] = options
             elif isinstance(options_value, list):
-                # Already a list, convert each value to int
-                data['options'] = [int(opt) if not isinstance(opt, int) else opt for opt in options_value]
+                # Already a list, filter out undefined/null and convert each value to int
+                valid_options = []
+                for opt in options_value:
+                    if opt not in ('undefined', 'null', None, ''):
+                        valid_options.append(int(opt) if not isinstance(opt, int) else opt)
+                data['options'] = valid_options if valid_options else None
             elif not isinstance(options_value, list):
                 # Single value, convert to list
-                data['options'] = [int(options_value)]
+                if str(options_value).lower() not in ('undefined', 'null', ''):
+                    data['options'] = [int(options_value)]
+                else:
+                    data.pop('options')
 
         # Handle boolean field - convert string to boolean
         if 'available' in data:
