@@ -144,6 +144,10 @@ class ProductSerializerPost(TranslatableModelSerializer):
         Raises:
             serializers.ValidationError: If categories/ingredients format is invalid.
         """
+        print("=== to_internal_value DEBUG ===")
+        print(f"Incoming data type: {type(data)}")
+        print(f"Incoming data: {data}")
+
         # Convert QueryDict to regular dict to avoid list wrapping issues
         if hasattr(data, 'lists'):
             # It's a QueryDict, convert to dict extracting first value from lists
@@ -289,7 +293,10 @@ class ProductSerializerPost(TranslatableModelSerializer):
                 except (ValueError, TypeError):
                     pass  # Let serializer validation handle it
 
-        return super().to_internal_value(data)
+        print(f"Transformed data before parent: {data}")
+        result = super().to_internal_value(data)
+        print(f"Result after parent: {result}")
+        return result
 
     class Meta:
         """Meta options for ProductSerializerPost."""
@@ -384,24 +391,53 @@ class ProductSerializerPost(TranslatableModelSerializer):
             ... }
             >>> product = serializer.update(existing_product, validated_data)
         """
+        print("=== update() DEBUG ===")
+        print(f"Instance: Product #{instance.id}")
+        print(f"Validated data: {validated_data}")
+
         translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', None)
         ingredients = validated_data.pop('ingredients', None)
         options = validated_data.pop('options', None)
-        if categories is not None:
-            instance.categories.set(categories)
-        if ingredients is not None:
-            instance.ingredients.set(ingredients)
-        if options is not None:
-            instance.options.set(options)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        for lang_code, translation_fields in translations.items():
-            instance.set_current_language(lang_code)
-            for attr, value in translation_fields.items():
+
+        print(f"Categories: {categories}")
+        print(f"Ingredients: {ingredients}")
+        print(f"Options: {options}")
+        print(f"Translations: {translations}")
+        print(f"Remaining validated_data: {validated_data}")
+
+        try:
+            if categories is not None:
+                print(f"Setting categories...")
+                instance.categories.set(categories)
+            if ingredients is not None:
+                print(f"Setting ingredients...")
+                instance.ingredients.set(ingredients)
+            if options is not None:
+                print(f"Setting options...")
+                instance.options.set(options)
+
+            print(f"Setting regular fields...")
+            for attr, value in validated_data.items():
+                print(f"  Setting {attr} = {value}")
                 setattr(instance, attr, value)
-        instance.save()
-        return instance
+
+            print(f"Setting translations...")
+            for lang_code, translation_fields in translations.items():
+                print(f"  Language: {lang_code}, fields: {translation_fields}")
+                instance.set_current_language(lang_code)
+                for attr, value in translation_fields.items():
+                    setattr(instance, attr, value)
+
+            print(f"Saving instance...")
+            instance.save()
+            print(f"SUCCESS!")
+            return instance
+        except Exception as e:
+            print(f"ERROR in update(): {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise
 
 
 class ProductOptionChoiceSerializer(TranslatableModelSerializer):
