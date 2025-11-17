@@ -118,8 +118,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         Regular users see only their own orders.
         Staff users see all orders.
 
+        Performance optimizations:
+        - select_related('user'): Reduces queries for user data
+        - prefetch_related('items__product__translations'): Reduces N+1 queries for items
+        - prefetch_related('items__product__categories__translations'): Preloads categories
+
         Returns:
-            QuerySet: Filtered orders queryset.
+            QuerySet: Optimized and filtered orders queryset.
 
         Example:
             >>> # Regular user sees only their orders
@@ -128,9 +133,18 @@ class OrderViewSet(viewsets.ModelViewSet):
             >>> Order.objects.all()
         """
         user = self.request.user
+
+        # Base queryset with optimized prefetching
+        queryset = Order.objects.select_related('user').prefetch_related(
+            'items__product__translations',
+            'items__product__categories__translations',
+            'items__product__ingredients__translations',
+            'items__product__options__translations',
+        )
+
         if user.is_staff:
-            return Order.objects.all()
-        return Order.objects.filter(user=user)
+            return queryset
+        return queryset.filter(user=user)
 
     def get_serializer_class(self) -> type[Serializer]:
         """Return appropriate serializer based on action.
