@@ -263,6 +263,15 @@ class ProductSerializerPost(TranslatableModelSerializer):
             elif isinstance(available_value, bool):
                 data['available'] = available_value
 
+        # Handle allows_extra_ingredients boolean field
+        if 'allows_extra_ingredients' in data:
+            allows_extra_value = get_value(data['allows_extra_ingredients'])
+            if isinstance(allows_extra_value, str):
+                # FormData sends boolean as string
+                data['allows_extra_ingredients'] = allows_extra_value.lower() in ('true', '1', 'yes')
+            elif isinstance(allows_extra_value, bool):
+                data['allows_extra_ingredients'] = allows_extra_value
+
         # Handle numeric fields - ensure they're proper types
         if 'price' in data:
             price_value = get_value(data['price'])

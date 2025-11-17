@@ -171,6 +171,7 @@ class Product(TranslatableModel):
         validators=[MinValueValidator(0)]
     )
     available = models.BooleanField(default=True)
+    allows_extra_ingredients = models.BooleanField(default=True)
     image = models.ImageField(upload_to='Products/', blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='products', blank=True)
     ingredients = models.ManyToManyField(Ingredient, related_name='products', blank=True)
