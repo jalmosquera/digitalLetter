@@ -125,6 +125,12 @@ class Order(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Order'
         verbose_name_plural = 'Orders'
+        # Performance optimization: Add indexes for common queries
+        indexes = [
+            models.Index(fields=['user', '-created_at'], name='order_user_created_idx'),
+            models.Index(fields=['status', '-created_at'], name='order_status_created_idx'),
+            models.Index(fields=['-created_at'], name='order_created_idx'),
+        ]
 
     def __str__(self) -> str:
         """Return string representation of the order.

@@ -13,4 +13,6 @@ RUN pip install -r requirements.txt
 COPY . /app/
 
 # Run migrations, collectstatic, and start gunicorn
-CMD ["sh", "-c", "echo 'Starting deployment...' && python manage.py migrate && echo 'Migrations complete. Running collectstatic...' && python manage.py collectstatic --noinput && echo 'Collectstatic complete. Starting gunicorn...' && gunicorn core.wsgi --bind 0.0.0.0:8000 --log-file - --access-logfile - --error-logfile - --workers 2"]
+# Performance optimization: 4 workers with gevent for async I/O handling
+# worker-connections: max 1000 simultaneous connections per worker
+CMD ["sh", "-c", "echo 'Starting deployment...' && python manage.py migrate && echo 'Migrations complete. Running collectstatic...' && python manage.py collectstatic --noinput && echo 'Collectstatic complete. Starting gunicorn...' && gunicorn core.wsgi --bind 0.0.0.0:8000 --log-file - --access-logfile - --error-logfile - --workers 4 --worker-class gevent --worker-connections 1000 --timeout 60"]
