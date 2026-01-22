@@ -357,6 +357,7 @@ class ProductSerializerPost(TranslatableModelSerializer):
             2
         """
         translations = validated_data.pop('translations', {})
+        translations = validated_data.pop('translations', {})
         categories = validated_data.pop('categories', [])
         ingredients = validated_data.pop('ingredients', [])
         options = validated_data.pop('options', [])
