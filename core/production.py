@@ -79,6 +79,10 @@ else:
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
+# Restrict API docs to authenticated users only in production
+SPECTACULAR_SETTINGS["SERVE_PERMISSIONS"] = ["rest_framework.permissions.IsAuthenticated"]
+SPECTACULAR_SETTINGS["SERVE_AUTHENTICATION"] = ["rest_framework.authentication.SessionAuthentication"]
+
 # CSRF Trusted Origins
 csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if csrf_origins:
