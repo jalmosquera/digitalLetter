@@ -11,6 +11,7 @@ import sys
 
 
 MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+MIDDLEWARE.insert(1, "core.middleware.DatabaseRetryMiddleware")
 
 if "corsheaders" not in INSTALLED_APPS:
     INSTALLED_APPS += ["corsheaders"]

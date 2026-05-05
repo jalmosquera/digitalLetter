@@ -11,8 +11,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.categories.models import Category
-from apps.ingredients.models import Ingredients
-from apps.products.models import Products
+from apps.ingredients.models import Ingredient
+from apps.products.models import Product
 
 
 class Command(BaseCommand):
@@ -145,7 +145,7 @@ class Command(BaseCommand):
             created.append(obj)
         return created
 
-    def _seed_ingredients(self) -> List[Ingredients]:
+    def _seed_ingredients(self) -> List[Ingredient]:
         """Create demo ingredients with Spanish and English translations.
 
         Creates three predefined ingredients commonly used in menu items:
@@ -156,7 +156,7 @@ class Command(BaseCommand):
         Each ingredient is created with translations in both Spanish and English.
 
         Returns:
-            List[Ingredients]: List of created Ingredients objects.
+            List[Ingredient]: List of created Ingredients objects.
 
         Example:
             >>> ingredients = self._seed_ingredients()
@@ -172,7 +172,7 @@ class Command(BaseCommand):
             {"es": {"name": "Albahaca"}, "en": {"name": "Basil"}},
         ]
         for item in data:
-            obj = Ingredients.objects.create()
+            obj = Ingredient.objects.create()
             obj.set_current_language('es')
             obj.name = item["es"]["name"]
             obj.save()
@@ -183,8 +183,8 @@ class Command(BaseCommand):
         return created
 
     def _seed_products(
-        self, categories: List[Category], ingredients: List[Ingredients]
-    ) -> List[Products]:
+        self, categories: List[Category], ingredients: List[Ingredient]
+    ) -> List[Product]:
         """Create demo products with translations and associations.
 
         Creates three sample products with complete details:
@@ -202,7 +202,7 @@ class Command(BaseCommand):
             ingredients: List of Ingredients objects to associate with products.
 
         Returns:
-            List[Products]: List of created Products objects.
+            List[Product]: List of created Products objects.
 
         Example:
             >>> products = self._seed_products(categories, ingredients)
@@ -284,7 +284,7 @@ class Command(BaseCommand):
         ]
 
         for item in data:
-            p = Products.objects.create(
+            p = Product.objects.create(
                 price=item["price"],
                 stock=item["stock"],
                 available=item["available"]
