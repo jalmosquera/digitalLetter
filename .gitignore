@@ -177,4 +177,6 @@ cython_debug/
 reports/
 allure-reports/
 
-.claude/ *.backup
+.claude/
+*.backup
+PROJECT_CONTEXT.md

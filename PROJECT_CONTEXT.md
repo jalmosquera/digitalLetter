@@ -188,7 +188,7 @@
 ### Settings Multi-entorno ✅
 - **Base:** `core/base.py` (configuración compartida)
 - **Development:** `core/development.py` (DEBUG=True, SQLite)
-- **Production:** `core/production.py` (DEBUG=False, PostgreSQL)
+- **Production:** `core/production.py` (DEBUG=False, PostgreSQL + DatabaseRetryMiddleware)
 - **Test:** `core/test.py` (para pytest)
 - **Main:** `core/settings.py` (carga según DJANGO_ENV)
 
@@ -199,6 +199,7 @@
 - **Admin:** `/admin/`
 - **JWT Token:** `/api/token/`, `/api/token/refresh/`
 - **API Routes:** Router con todas las apps
+- **Health Check:** `/health/` (verifica DB, sin autenticación)
 
 ### Autenticación ✅
 - **Método:** JWT vía Simple JWT
@@ -291,12 +292,14 @@
 - ❌ Validaciones adicionales
 
 #### 🚀 DEPLOY/PRODUCCIÓN:
-- ❌ Configurar PostgreSQL para producción
+- ✅ Deploy en Railway (activo, en producción)
+- ✅ CI/CD (GitHub Actions) — keep-alive cron + django.yml
+- ✅ Health check endpoint `/health/` con verificación de DB
+- ✅ Railway healthcheck configurado (`/health/`, timeout 30s)
+- ✅ DatabaseRetryMiddleware en producción
+- ✅ Variables de entorno configuradas
 - ❌ Configurar static files (S3/CDN)
 - ❌ Configurar media files (S3/CDN)
-- ❌ Variables de entorno para producción
-- ❌ CI/CD (GitHub Actions)
-- ❌ Deploy a Railway/Heroku/AWS
 - ❌ Monitoreo (Sentry opcional)
 - ❌ Backup strategy
 
@@ -346,13 +349,17 @@
 ### Configuración
 - `/core/settings.py` - Settings principal
 - `/core/base.py` - Configuración base
-- `/core/urls.py` - URLs principales
+- `/core/urls.py` - URLs principales (incluye /health/)
+- `/core/views.py` - Health check view
+- `/core/middleware.py` - DatabaseRetryMiddleware
+- `/core/production.py` - Settings producción (Railway)
 - `/manage.py` - Django management
 - `/requirements.txt` - Dependencias Python
 - `/pytest.ini` - Configuración de pytest
 - `/.env` - Variables de entorno (no en git)
 - `/Dockerfile` - Container Docker
 - `/docker-compose.yml` - Orquestación
+- `/railway.json` - Configuración Railway (healthcheck, restart policy)
 
 ### Datos
 - `/db.sqlite3` - Base de datos SQLite
@@ -426,10 +433,10 @@
 - TEST: ██████░░░░░░░░░░░░░░ 30%
 - DOC: ████████████░░░░░░░░ 60%
 - OPTIMIZACIÓN: ░░░░░░░░░░░░░░░░░░░░ 0%
-- DEPLOY: ░░░░░░░░░░░░░░░░░░░░ 0%
+- DEPLOY: ████████████░░░░░░░░ 60%
 
 ---
 
-**Última actualización:** 2025-10-26
+**Última actualización:** 2026-05-05
 **Generado por:** PROJECT MANAGER Agent
 **Proyecto:** DigitalLetter API
