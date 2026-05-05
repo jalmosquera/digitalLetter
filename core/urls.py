@@ -5,9 +5,11 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
+from core.views import health_check
 
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     #Docs
     path('api/', include('apps.products.api.router')),  # Products API
