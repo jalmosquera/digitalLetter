@@ -242,6 +242,7 @@ PARLER_LANGUAGES = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "https://equuspub.vercel.app",
     "https://digitalletter-production-d688.up.railway.app",
 ]
