@@ -45,7 +45,7 @@ if database_url:
 
 # Static files configuration for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Remove STATICFILES_DIRS in production (it conflicts with STATIC_ROOT)
 STATICFILES_DIRS = []
